@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arbre Généalogique de la Famille</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    
+</head>
+<body>
+    <!-- Overlay de chargement -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification"></div>
+
+    <header>
+        <div class="container">
+            <h1>Arbre Généalogique de la Famille</h1>
+            <p>Découvrez l'histoire et les connexions de notre famille à travers quatre générations</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Barre de recherche -->
+        <div class="search-container">
+            <div class="search-box">
+                <input type="text" class="search-input" id="searchInput" placeholder="Rechercher un membre par nom, prénom, date de naissance...">
+                <button class="search-btn" id="searchBtn">
+                    <i class="fas fa-search"></i>
+                    <span>Rechercher</span>
+                </button>
+            </div>
+            <div class="search-filters">
+                <select class="filter-select" id="searchFilter">
+                    <option value="all">Tous les champs</option>
+                    <option value="name">Nom et prénom</option>
+                    <option value="firstName">Prénom uniquement</option>
+                    <option value="lastName">Nom de famille uniquement</option>
+                    <option value="birthDate">Date de naissance</option>
+                    <option value="generation">Génération</option>
+                </select>
+                <select class="filter-select" id="generationFilter">
+                    <option value="all">Toutes les générations</option>
+                    <option value="1">1ère génération</option>
+                    <option value="2">2ème génération</option>
+                    <option value="3">3ème génération</option>
+                    <option value="4">4ème génération</option>
+                </select>
+                <button class="search-btn" id="clearSearchBtn" style="background-color: #95a5a6;">
+                    <i class="fas fa-times"></i>
+                    <span>Effacer</span>
+                </button>
+            </div>
+            <div class="search-results-info" id="searchResultsInfo">
+                Tapez un terme de recherche pour trouver des membres de la famille
+            </div>
+            <!-- Suggestions de recherche -->
+            <div class="search-suggestions" id="searchSuggestions"></div>
+        </div>
+
+        <!-- Navigation entre générations -->
+        <div class="nav-container">
+            <button class="nav-btn active" data-gen="all">Toutes les générations</button>
+            <button class="nav-btn" data-gen="1">1ère génération (2 membres)</button>
+            <button class="nav-btn" data-gen="2">2ème génération (10 membres)</button>
+            <button class="nav-btn" data-gen="3">3ème génération (47 membres)</button>
+            <button class="nav-btn" data-gen="4">4ème génération (84 membres)</button>
+        </div>
+
+        <!-- Conteneur pour l'arbre généalogique -->
+        <div class="tree-container">
+            <div class="tree" id="familyTree">
+                <!-- L'arbre sera généré dynamiquement par JavaScript -->
+            </div>
+        </div>
+
+        <!-- Panneau d'information des membres -->
+        <div class="info-panel" id="infoPanel">
+            <!-- Les informations seront insérées dynamiquement par JavaScript -->
+        </div>
+
+        <!-- Légende -->
+        <div class="legend">
+            <h3>Légende des générations</h3>
+            <div class="legend-items">
+                <div class="legend-item">
+                    <div class="legend-color gen-1"></div>
+                    <span>1ère génération (2 membres)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color gen-2"></div>
+                    <span>2ème génération (10 membres)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color gen-3"></div>
+                    <span>3ème génération (47 membres)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color gen-4"></div>
+                    <span>4ème génération (84 membres)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: var(--success-color);"></div>
+                    <span>Résultat de recherche</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bouton de retour en haut -->
+    <div class="back-to-top" id="backToTop">
+        <i class="fas fa-arrow-up"></i>
+    </div>
+
+    <footer>
+    <div class="container">
+        <div class="footer-wrapper">
+            <div class="footer-info">
+                <h3>Arbre Généalogique Familial</h3>
+                <p>Préservant l'héritage et les connexions familiales à travers les générations</p>
+                <p class="copyright">© <span id="currentYear"></span> - Tous droits réservés</p>
+            </div>
+            
+            <div class="footer-creator">
+                <div class="creator-card">
+                    <div class="creator-avatar">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <div class="creator-info">
+                        <h4>Propulsé par</h4>
+                        <h3>Emmanuel Romaric ABOLO</h3>
+                        <a href="https://romaricabolo.tiiny.site">Créateur & Développeur</a>
+                    </div>
+                </div>
+                
+                <div class="creator-social">
+                    <h4>Me suivre</h4>
+                    <div class="social-icons">
+                        <a href="https://www.facebook.com/profile.php?id=61574871225572" target="_blank" class="social-icon facebook" title="Facebook">
+                            <i class="fab fa-facebook-f"></i>
+                            <span>Facebook</span>
+                        </a>
+                        <a href="https://wa.me/+237652153075" target="_blank" class="social-icon whatsapp" title="Whatsapp">
+                            <i class="fab fa-whatsapp"></i>
+                            <span>Whatsapp</span>
+                        </a>
+                        <a href="https://www.linkedin.com/in/emmanuel-romaric-abolo-32934128a?utm_source" target="_blank" class="social-icon linkedin" title="LinkedIn">
+                            <i class="fab fa-linkedin-in"></i>
+                            <span>LinkedIn</span>
+                        </a>
+                        <a href="https://www.tiktok.com/@romaricabolo335?_=ZM-91EwVpRyPpU" target="_blank" class="social-icon tiktok" title="Tiktok">
+                            <i class="fab fa-tiktok"></i>
+                            <span>Tiktok</span>
+                        </a>
+                        <a href="https://github.com/romaricabolo" target="_blank" class="social-icon github" title="GitHub">
+                            <i class="fab fa-github"></i>
+                            <span>GitHub</span>
+                        </a>
+                        <a href="mailto:romaricabolo@gmail.com" class="social-icon email" title="Email">
+                            <i class="fas fa-envelope"></i>
+                            <span>Email</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <p>Ce site a été créé avec passion pour honorer la mémoire de nos ancêtres</p>
+        </div>
+    </div>
+</footer>
+
+   <script src="fonctions.js"></script>
+
+</body>
+</html>

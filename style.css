@@ -1,8 +1,8 @@
 /* Variables CSS pour une gestion facile des couleurs */
         :root {
-            --primary-color: #2c3e50;
-            --secondary-color: #3498db;
-            --accent-color: #e74c3c;
+            --primary-color: #2c5530;
+            --secondary-color: #73956f;
+            --accent-color: #d4af37;
             --success-color: #2ecc71;
             --light-color: #ecf0f1;
             --dark-color: #2c3e50;
@@ -403,6 +403,7 @@
         .gen-2 { background-color: #3498db; }
         .gen-3 { background-color: #2ecc71; }
         .gen-4 { background-color: #f39c12; }
+        .gen-5 { background-color: #86b1ce; }
 
         /* Styles responsives */
         @media (max-width: 1200px) {

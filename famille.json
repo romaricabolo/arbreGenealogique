@@ -1226,8 +1226,8 @@
   {
     "ID": "P103",
     "Generation": "4",
-    "Prennom": "tresor",
-    "Nom": "Ezoo mbozoo",
+    "Prennom": "Tresor",
+    "Nom": "EZO'O MBOZO'O",
     "Sexe": "M",
     "DateNaissance": "0000-00-102",
     "ID_Pere": "P030",
@@ -1627,7 +1627,7 @@
     "Sexe": "M",
     "DateNaissance": "0000-00-24",
     "ID_Pere": "P004",
-    "ID_Mere": "",
+    "ID_Mere": "P139",
     "ConjointID": "",
     "URL_img": "images/Russell 1.jpg"
   },

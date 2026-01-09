@@ -696,3 +696,667 @@
                 notification.classList.remove('show');
             }, 3000);
         }
+
+        // -------------------Script pour la page souvenir---------------------
+
+         // Données des photos
+        const photos = [
+            {
+                id: 1,
+                src: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+                title: "Mariage Grands-Parents - 1965",
+                date: "15 Juin 1965",
+                desc: "Cérémonie de mariage de Jean et Marie à la mairie de Lyon",
+                categories: ["anciennes", "mariages"],
+                uploadedBy: "Marie D.",
+                uploadDate: "2023-05-10"
+            },
+            {
+                id: 2,
+                src: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+                title: "Réunion Familiale d'Été",
+                date: "Août 1990",
+                desc: "Toute la famille réunie pour les vacances d'été en Provence",
+                categories: ["anciennes", "reunions"],
+                uploadedBy: "Pierre L.",
+                uploadDate: "2023-04-22"
+            },
+            {
+                id: 3,
+                src: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+                title: "Naissance de Sophie",
+                date: "12 Mars 2005",
+                desc: "Première photo de Sophie à la maternité",
+                categories: ["recentes", "naissance"],
+                uploadedBy: "Sophie M.",
+                uploadDate: "2023-06-15"
+            },
+            {
+                id: 4,
+                src: "https://images.unsplash.com/photo-1511988617509-a57c8a288659?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+                title: "Noël en Famille",
+                date: "25 Décembre 2015",
+                desc: "Célébration de Noël avec tous les cousins",
+                categories: ["recentes", "reunions"],
+                uploadedBy: "Thomas R.",
+                uploadDate: "2023-03-18"
+            },
+            {
+                id: 5,
+                src: "https://images.unsplash.com/photo-1542037104857-ffbb0b9155fb?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+                title: "Voyage en Bretagne",
+                date: "Juillet 2018",
+                desc: "Excursion en famille sur les côtes bretonnes",
+                categories: ["recentes", "voyage"],
+                uploadedBy: "Claire B.",
+                uploadDate: "2023-02-05"
+            },
+            {
+                id: 6,
+                src: "https://images.unsplash.com/photo-1537633552985-df8429e8048b?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+                title: "Anniversaire des 80 ans",
+                date: "3 Mai 2020",
+                desc: "Célébration des 80 ans de Grand-Père Pierre",
+                categories: ["recentes", "reunions"],
+                uploadedBy: "Jean D.",
+                uploadDate: "2023-01-30"
+            },
+            {
+                id: 7,
+                src: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+                title: "Mariage de Claire et Marc",
+                date: "10 Septembre 2022",
+                desc: "Beau mariage au château de la région",
+                categories: ["recentes", "mariages"],
+                uploadedBy: "Marc T.",
+                uploadDate: "2023-07-12"
+            },
+            {
+                id: 8,
+                src: "https://images.unsplash.com/photo-1519750783826-ea0b6bdbd5a8?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+                title: "Photos d'École - Année 1972",
+                date: "1972",
+                desc: "Classe de CM2 de l'école du village",
+                categories: ["anciennes"],
+                uploadedBy: "Anne S.",
+                uploadDate: "2023-08-01"
+            }
+        ];
+
+        // Données des catégories
+        const categories = [
+            { id: 'anciennes', name: 'Anciennes', icon: 'fas fa-history' },
+            { id: 'recentes', name: 'Récentes', icon: 'fas fa-calendar-alt' },
+            { id: 'mariages', name: 'Mariages', icon: 'fas fa-ring' },
+            { id: 'reunions', name: 'Réunions', icon: 'fas fa-users' },
+            { id: 'naissance', name: 'Naissances', icon: 'fas fa-baby' },
+            { id: 'voyage', name: 'Voyages', icon: 'fas fa-plane' },
+            { id: 'portrait', name: 'Portraits', icon: 'fas fa-user' },
+            { id: 'enfance', name: 'Enfance', icon: 'fas fa-child' }
+        ];
+
+        // Variables globales
+        let currentFilter = 'all';
+        let currentPhotoIndex = 0;
+        let filteredPhotos = [];
+        let userPhotos = JSON.parse(localStorage.getItem('familyPhotos')) || [];
+        let selectedCategories = [];
+        let selectedFileData = null;
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Année courante
+            document.getElementById('currentYear').textContent = new Date().getFullYear();
+            
+            // Initialiser les composants
+            updateCounters();
+            renderGallery();
+            setupEventListeners();
+            setupMobileMenu();
+            setupAddPhotoForm();
+            setupBackToTop();
+            setupPhotoModal();
+            
+            // Cacher l'indicateur après 3 secondes
+            setTimeout(() => {
+                const indicator = document.querySelector('.current-page-indicator');
+                if (indicator) {
+                    indicator.style.opacity = '0';
+                    indicator.style.transform = 'translateX(-50%) translateY(-30px)';
+                    setTimeout(() => {
+                        indicator.style.display = 'none';
+                    }, 500);
+                }
+            }, 3000);
+            
+            // Scroll vers le haut
+            window.scrollTo(0, 0);
+        });
+
+        // Mettre à jour les compteurs
+        function updateCounters() {
+            const totalPhotos = photos.length + userPhotos.length;
+            document.getElementById('totalPhotos').textContent = totalPhotos;
+            
+            // Photos ajoutées récemment (moins de 30 jours)
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            
+            const recentPhotos = userPhotos.filter(photo => {
+                const uploadDate = new Date(photo.uploadDate);
+                return uploadDate >= thirtyDaysAgo;
+            }).length;
+            
+            document.getElementById('addedPhotos').textContent = recentPhotos;
+        }
+
+        // Rendre la galerie
+        function renderGallery() {
+            const gallery = document.getElementById('photoGallery');
+            gallery.innerHTML = '';
+            
+            const allPhotos = [...photos, ...userPhotos];
+            
+            filteredPhotos = currentFilter === 'all' 
+                ? [...allPhotos] 
+                : allPhotos.filter(photo => 
+                    photo.categories && photo.categories.includes(currentFilter)
+                );
+            
+            filteredPhotos.forEach((photo, index) => {
+                const photoCard = document.createElement('div');
+                photoCard.className = 'photo-card';
+                photoCard.dataset.index = index;
+                photoCard.style.setProperty('--index', index);
+                
+                // Créer les tags de catégories
+                const categoriesHTML = photo.categories 
+                    ? photo.categories.map(cat => {
+                        const category = categories.find(c => c.id === cat);
+                        return category ? `<span class="category-tag">${category.name}</span>` : '';
+                      }).join('')
+                    : '';
+                
+                // Info uploader
+                const uploadedInfo = photo.uploadedBy 
+                    ? `<div class="uploader-info">
+                        <i class="fas fa-user-edit"></i>
+                        Ajouté par ${photo.uploadedBy}
+                       </div>`
+                    : '';
+                
+                photoCard.innerHTML = `
+                    <img src="${photo.src}" alt="${photo.title}" class="photo-img">
+                    <div class="photo-info">
+                        <h3 class="photo-title">${photo.title}</h3>
+                        <span class="photo-date">${photo.date}</span>
+                        <p class="photo-desc">${photo.desc}</p>
+                        <div class="photo-categories">${categoriesHTML}</div>
+                        ${uploadedInfo}
+                    </div>
+                `;
+                
+                photoCard.addEventListener('click', () => openPhotoModal(index));
+                gallery.appendChild(photoCard);
+            });
+        }
+
+        // Filtrage des photos
+        function filterPhotos(filter) {
+            currentFilter = filter;
+            renderGallery();
+            
+            // Mettre à jour les boutons actifs
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.filter === filter);
+            });
+        }
+
+        // Recherche
+       
+
+        // Menu mobile
+        function setupMobileMenu() {
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            const navLinks = document.getElementById('navLinks');
+            
+            mobileMenuBtn.addEventListener('click', () => {
+                navLinks.classList.toggle('active');
+                const icon = mobileMenuBtn.querySelector('i');
+                icon.className = navLinks.classList.contains('active') 
+                    ? 'fas fa-times' 
+                    : 'fas fa-bars';
+                mobileMenuBtn.style.transform = navLinks.classList.contains('active') 
+                    ? 'rotate(90deg)' 
+                    : 'rotate(0deg)';
+            });
+            
+            // Fermer le menu en cliquant sur un lien
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                link.addEventListener('click', () => {
+                    navLinks.classList.remove('active');
+                    const icon = mobileMenuBtn.querySelector('i');
+                    icon.className = 'fas fa-bars';
+                    mobileMenuBtn.style.transform = 'rotate(0deg)';
+                });
+            });
+        }
+
+        // Formulaire d'ajout de photo
+        function setupAddPhotoForm() {
+            const openModalBtn = document.getElementById('openAddPhotoModal');
+            const closeModalBtn = document.getElementById('closeAddModal');
+            const cancelBtn = document.getElementById('cancelBtn');
+            const addPhotoModal = document.getElementById('addPhotoModal');
+            const fileUploadArea = document.getElementById('fileUploadArea');
+            const browseBtn = document.getElementById('browseBtn');
+            const photoFileInput = document.getElementById('photoFile');
+            const selectedFile = document.getElementById('selectedFile');
+            const fileThumbnail = document.getElementById('fileThumbnail');
+            const fileNameDisplay = document.getElementById('fileNameDisplay');
+            const fileSizeDisplay = document.getElementById('fileSizeDisplay');
+            const removeFileBtn = document.getElementById('removeFile');
+            const uploadProgress = document.getElementById('uploadProgress');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            const uploadStatus = document.getElementById('uploadStatus');
+            const submitBtn = document.getElementById('submitBtn');
+            const uploadForm = document.getElementById('photoUploadForm');
+            const categoriesGrid = document.getElementById('categoriesGrid');
+            
+            // Initialiser les catégories
+            function initCategories() {
+                categoriesGrid.innerHTML = '';
+                selectedCategories = [];
+                
+                categories.forEach(category => {
+                    const categoryEl = document.createElement('div');
+                    categoryEl.className = 'category-option';
+                    categoryEl.dataset.id = category.id;
+                    
+                    categoryEl.innerHTML = `
+                        <i class="${category.icon} category-icon"></i>
+                        <span>${category.name}</span>
+                        <i class="fas fa-check checkmark"></i>
+                    `;
+                    
+                    categoryEl.addEventListener('click', () => {
+                        categoryEl.classList.toggle('selected');
+                        if (categoryEl.classList.contains('selected')) {
+                            selectedCategories.push(category.id);
+                        } else {
+                            selectedCategories = selectedCategories.filter(id => id !== category.id);
+                        }
+                        validateForm();
+                    });
+                    
+                    categoriesGrid.appendChild(categoryEl);
+                });
+            }
+            
+            // Valider le formulaire
+            function validateForm() {
+                const title = document.getElementById('photoTitle').value.trim();
+                const date = document.getElementById('photoDate').value.trim();
+                const name = document.getElementById('uploaderName').value.trim();
+                const hasFile = selectedFileData !== null;
+                
+                const isValid = title && date && name && hasFile;
+                submitBtn.disabled = !isValid;
+                
+                return isValid;
+            }
+            
+            // Ouvrir le modal
+            openModalBtn.addEventListener('click', () => {
+                addPhotoModal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+                initCategories();
+            });
+            
+            // Fermer le modal
+            function closeModal() {
+                addPhotoModal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+                resetForm();
+            }
+            
+            closeModalBtn.addEventListener('click', closeModal);
+            cancelBtn.addEventListener('click', closeModal);
+            
+            // Fermer en cliquant à l'extérieur
+            addPhotoModal.addEventListener('click', (e) => {
+                if (e.target === addPhotoModal) {
+                    closeModal();
+                }
+            });
+            
+            // Gestion drag & drop
+            ['dragenter', 'dragover'].forEach(eventName => {
+                fileUploadArea.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    fileUploadArea.classList.add('drag-over');
+                });
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                fileUploadArea.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    fileUploadArea.classList.remove('drag-over');
+                });
+            });
+            
+            fileUploadArea.addEventListener('drop', handleDrop);
+            
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                if (files.length > 0) {
+                    handleFileSelect(files[0]);
+                }
+            }
+            
+            // Parcourir les fichiers
+            browseBtn.addEventListener('click', () => {
+                photoFileInput.click();
+            });
+            
+            photoFileInput.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    handleFileSelect(this.files[0]);
+                }
+            });
+            
+            // Gestion de la sélection de fichier
+            function handleFileSelect(file) {
+                if (!file) return;
+                
+                if (file.size > 5 * 1024 * 1024) {
+                    showStatus('error', 'Le fichier est trop volumineux. Maximum 5MB.');
+                    return;
+                }
+                
+                if (!file.type.match('image.*')) {
+                    showStatus('error', 'Veuillez sélectionner une image (JPG, PNG, GIF).');
+                    return;
+                }
+                
+                selectedFileData = file;
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    fileThumbnail.src = e.target.result;
+                    fileNameDisplay.textContent = file.name;
+                    fileSizeDisplay.textContent = `${(file.size / 1024 / 1024).toFixed(2)} MB`;
+                    selectedFile.classList.add('active');
+                    validateForm();
+                };
+                reader.readAsDataURL(file);
+            }
+            
+            // Supprimer le fichier
+            removeFileBtn.addEventListener('click', () => {
+                selectedFileData = null;
+                selectedFile.classList.remove('active');
+                photoFileInput.value = '';
+                validateForm();
+            });
+            
+            // Afficher un message d'état
+            function showStatus(type, message) {
+                uploadStatus.className = `upload-status ${type}`;
+                uploadStatus.innerHTML = `
+                    <div class="status-icon">
+                        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+                    </div>
+                    <div style="font-size: 1.2rem;">${message}</div>
+                `;
+                uploadStatus.style.display = 'block';
+                
+                if (type === 'success') {
+                    setTimeout(() => {
+                        uploadStatus.style.display = 'none';
+                    }, 5000);
+                }
+            }
+            
+            // Simuler l'upload
+            function simulateUpload() {
+                uploadProgress.style.display = 'block';
+                let progress = 0;
+                
+                const interval = setInterval(() => {
+                    progress += 10;
+                    progressFill.style.width = `${progress}%`;
+                    progressText.textContent = `${progress}%`;
+                    
+                    if (progress >= 100) {
+                        clearInterval(interval);
+                        setTimeout(() => {
+                            completeUpload();
+                        }, 500);
+                    }
+                }, 150);
+            }
+            
+            // Compléter l'upload
+            function completeUpload() {
+                const title = document.getElementById('photoTitle').value;
+                const date = document.getElementById('photoDate').value;
+                const description = document.getElementById('photoDescription').value;
+                const uploaderName = document.getElementById('uploaderName').value;
+                const uploaderEmail = document.getElementById('uploaderEmail').value;
+                
+                const newPhoto = {
+                    id: Date.now(),
+                    src: fileThumbnail.src,
+                    title: title,
+                    date: date,
+                    desc: description,
+                    categories: [...selectedCategories],
+                    uploadedBy: uploaderName,
+                    uploadDate: new Date().toISOString().split('T')[0]
+                };
+                
+                // Sauvegarder
+                userPhotos.push(newPhoto);
+                localStorage.setItem('familyPhotos', JSON.stringify(userPhotos));
+                
+                // Mettre à jour l'affichage
+                updateCounters();
+                renderGallery();
+                
+                // Message de succès
+                showStatus('success', `Félicitations ${uploaderName} !<br>Votre photo a été ajoutée avec succès.`);
+                
+                // Réinitialiser après un délai
+                setTimeout(() => {
+                    resetForm();
+                    closeModal();
+                    showToast(`"${title}" a été ajoutée à l'album familial !`);
+                }, 2000);
+            }
+            
+            // Toast de notification
+            function showToast(message) {
+                const toast = document.createElement('div');
+                toast.className = 'toast-notification';
+                toast.innerHTML = `
+                    <i class="fas fa-check-circle"></i>
+                    <span>${message}</span>
+                `;
+                
+                document.body.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.style.animation = 'slideOutRight 0.4s ease forwards';
+                    setTimeout(() => {
+                        if (toast.parentNode) {
+                            document.body.removeChild(toast);
+                        }
+                    }, 400);
+                }, 4000);
+            }
+            
+            // Réinitialiser le formulaire
+            function resetForm() {
+                uploadForm.reset();
+                selectedFileData = null;
+                selectedCategories = [];
+                selectedFile.classList.remove('active');
+                uploadProgress.style.display = 'none';
+                progressFill.style.width = '0%';
+                progressText.textContent = '0%';
+                uploadStatus.style.display = 'none';
+                submitBtn.disabled = true;
+                
+                document.querySelectorAll('.category-option').forEach(option => {
+                    option.classList.remove('selected');
+                });
+            }
+            
+            // Validation en temps réel
+            ['photoTitle', 'photoDate', 'uploaderName'].forEach(id => {
+                document.getElementById(id).addEventListener('input', validateForm);
+            });
+            
+            // Soumission
+            uploadForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                if (!validateForm()) {
+                    showStatus('error', 'Veuillez remplir tous les champs obligatoires.');
+                    return;
+                }
+                
+                simulateUpload();
+            });
+            
+            // Initialiser
+            initCategories();
+        }
+
+        // Modal photo
+        function setupPhotoModal() {
+            const photoModal = document.getElementById('photoModal');
+            const modalClose = document.getElementById('modalClose');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const modalImg = document.getElementById('modalImg');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalDate = document.getElementById('modalDate');
+            const modalDesc = document.getElementById('modalDesc');
+            
+            function openPhotoModal(index) {
+                currentPhotoIndex = index;
+                const photo = filteredPhotos[index];
+                
+                modalImg.src = photo.src;
+                modalTitle.textContent = photo.title;
+                modalDate.textContent = photo.date;
+                modalDesc.textContent = photo.desc;
+                
+                photoModal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
+            
+            function closePhotoModal() {
+                photoModal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+            
+            function navigatePhoto(direction) {
+                currentPhotoIndex += direction;
+                
+                if (currentPhotoIndex < 0) {
+                    currentPhotoIndex = filteredPhotos.length - 1;
+                } else if (currentPhotoIndex >= filteredPhotos.length) {
+                    currentPhotoIndex = 0;
+                }
+                
+                openPhotoModal(currentPhotoIndex);
+            }
+            
+            // Événements
+            modalClose.addEventListener('click', closePhotoModal);
+            prevBtn.addEventListener('click', () => navigatePhoto(-1));
+            nextBtn.addEventListener('click', () => navigatePhoto(1));
+            
+            // Fermer avec ESC
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && photoModal.style.display === 'flex') {
+                    closePhotoModal();
+                }
+                if (e.key === 'ArrowLeft' && photoModal.style.display === 'flex') {
+                    navigatePhoto(-1);
+                }
+                if (e.key === 'ArrowRight' && photoModal.style.display === 'flex') {
+                    navigatePhoto(1);
+                }
+            });
+            
+            // Fermer en cliquant à l'extérieur
+            photoModal.addEventListener('click', (e) => {
+                if (e.target === photoModal) {
+                    closePhotoModal();
+                }
+            });
+            
+            // Exporter la fonction
+            window.openPhotoModal = openPhotoModal;
+        }
+
+        // Back to Top
+        function setupBackToTop() {
+            const backToTopBtn = document.getElementById('backToTop');
+            
+            window.addEventListener('scroll', () => {
+                if (window.pageYOffset > 500) {
+                    backToTopBtn.classList.add('visible');
+                } else {
+                    backToTopBtn.classList.remove('visible');
+                }
+            });
+            
+            backToTopBtn.addEventListener('click', () => {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+        }
+
+        // Configuration des événements globaux
+        function setupEventListeners() {
+            // Filtres
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => filterPhotos(btn.dataset.filter));
+            });
+
+            // Recherche
+            
+            // Gestion du scroll pour la navbar
+            let lastScroll = 0;
+            window.addEventListener('scroll', () => {
+                const currentScroll = window.pageYOffset;
+                const nav = document.querySelector('.main-nav');
+                
+                if (currentScroll > lastScroll && currentScroll > 100) {
+                    nav.style.transform = 'translateY(-100%)';
+                } else {
+                    nav.style.transform = 'translateY(0)';
+                }
+                
+                lastScroll = currentScroll;
+            });
+            
+            // Effet parallaxe hero
+            window.addEventListener('scroll', () => {
+                const scrolled = window.pageYOffset;
+                const hero = document.querySelector('.photos-hero');
+                if (hero) {
+                    const rate = scrolled * 0.5;
+                    hero.style.transform = `translate3d(0, ${rate}px, 0)`;
+                }
+            });
+        }

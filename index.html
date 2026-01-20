@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arbre Généalogique de la Famille</title>
+    <title>Arbre Généalogique de la Famille MBOZO'O</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
-    
+    <link rel="icon" type="image/x-icon" href="./images/arbre.png">
 </head>
 <body>
     <!-- Overlay de chargement -->
@@ -14,190 +14,289 @@
         <div class="spinner"></div>
     </div>
 
-    <!-- Notification -->
-    <div class="notification" id="notification"></div>
-
-    <header>
-        <div class="container">
-            <h1>Arbre Généalogique de la Famille</h1>
-            <p>Découvrez l'histoire et les connexions de notre famille à travers quatre générations</p>
-        </div>
-        <!-- Style inline minimal -->
-        <a href="photos.html" style="
-            display: inline-flex;
-            align-items: center;
-            gap: 15px;
-            background: linear-gradient(135deg, #2d3e31, #73956f);
-            color: white;
-            text-decoration: none;
-            padding: 15px 30px;
-            border-radius: 12px;
-            font-weight: 600;
-            transition: all 0.3s;
-            box-shadow: 0 5px 20px rgba(14, 18, 15, 0.3);
-        ">
-            <i class="fas fa-images" style="color: #d4af37;"></i>
-            <span>Photos Souvenirs</span>
-            <i class="fas fa-arrow-right"></i>
-        </a>
-    </header>
-
-    <div class="container">
-        <!-- Barre de recherche -->
-        <div class="search-container">
-            <div class="search-box">
-                <input type="text" class="search-input" id="searchInput" placeholder="Rechercher un membre par nom, prénom, date de naissance...">
-                <button class="search-btn" id="searchBtn">
-                    <i class="fas fa-search"></i>
-                    <span>Rechercher</span>
-                </button>
-            </div>
-            <div class="search-filters">
-                <select class="filter-select" id="searchFilter">
-                    <option value="all">Tous les champs</option>
-                    <option value="name">Nom et prénom</option>
-                    <option value="firstName">Prénom uniquement</option>
-                    <option value="lastName">Nom de famille uniquement</option>
-                    <option value="birthDate">Date de naissance</option>
-                    <option value="generation">Génération</option>
-                </select>
-                <select class="filter-select" id="generationFilter">
-                    <option value="all">Toutes les générations</option>
-                    <option value="1">1ère génération</option>
-                    <option value="2">2ème génération</option>
-                    <option value="3">3ème génération</option>
-                    <option value="4">4ème génération</option>
-                </select>
-                <button class="search-btn" id="clearSearchBtn" style="background-color: #95a5a6;">
-                    <i class="fas fa-times"></i>
-                    <span>Effacer</span>
-                </button>
-            </div>
-            <div class="search-results-info" id="searchResultsInfo">
-                Tapez un terme de recherche pour trouver des membres de la famille
-            </div>
-            <!-- Suggestions de recherche -->
-            <div class="search-suggestions" id="searchSuggestions"></div>
-        </div>
-
-        <!-- Navigation entre générations -->
-        <div class="nav-container">
-            <button class="nav-btn active" data-gen="all">Toutes les générations</button>
-            <button class="nav-btn" data-gen="1">1ère génération (2 membres)</button>
-            <button class="nav-btn" data-gen="2">2ème génération (10 membres)</button>
-            <button class="nav-btn" data-gen="3">3ème génération (47 membres)</button>
-            <button class="nav-btn" data-gen="4">4ème génération (84 membres)</button>
-        </div>
-
-        <!-- Conteneur pour l'arbre généalogique -->
-        <div class="tree-container">
-            <div class="tree" id="familyTree">
-                <!-- L'arbre sera généré dynamiquement par JavaScript -->
-            </div>
-        </div>
-
-        <!-- Panneau d'information des membres -->
-        <div class="info-panel" id="infoPanel">
-            <!-- Les informations seront insérées dynamiquement par JavaScript -->
-        </div>
-
-        <!-- Légende -->
-        <div class="legend">
-            <h3>Légende des générations</h3>
-            <div class="legend-items">
-                <div class="legend-item">
-                    <div class="legend-color gen-1"></div>
-                    <span>1ère génération (2 membres)</span>
+    <!-- Modal d'informations -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="member-modal">
+            <div class="modal-header">
+                <div class="modal-avatar" id="modalAvatar"></div>
+                <div class="modal-title">
+                    <h2 id="modalName"></h2>
+                    <p id="modalTitle"></p>
                 </div>
-                <div class="legend-item">
-                    <div class="legend-color gen-2"></div>
-                    <span>2ème génération (10 membres)</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color gen-3"></div>
-                    <span>3ème génération (47 membres)</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color gen-4"></div>
-                    <span>4ème génération (84 membres)</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color gen-5"></div>
-                    <span>5ème génération (1 membres)</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background-color: var(--success-color);"></div>
-                    <span>Résultat de recherche</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Bouton de retour en haut -->
-    <div class="back-to-top" id="backToTop">
-        <i class="fas fa-arrow-up"></i>
-    </div>
-
-    <footer>
-    <div class="container">
-        <div class="footer-wrapper">
-            <div class="footer-info">
-                <h3>Arbre Généalogique Familial</h3>
-                <p>Préservant l'héritage et les connexions familiales à travers les générations</p>
-                <p class="copyright">© <span id="currentYear"></span> - Tous droits réservés</p>
             </div>
             
-            <div class="footer-creator">
-                <div class="creator-card">
-                    <div class="creator-avatar">
-                        <i class="fas fa-user-circle"></i>
-                    </div>
-                    <div class="creator-info">
-                        <h4>Propulsé par</h4>
-                        <h3>Emmanuel Romaric ABOLO</h3>
-                        <a href="https://romaricabolo.tiiny.site">En Savoir Plus</a>
+            <div class="modal-content">
+                <div class="modal-section">
+                    <h3>Informations personnelles</h3>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Genre</span>
+                            <span class="info-value" id="modalGender"></span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Date de naissance</span>
+                            <span class="info-value" id="modalBirth"></span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Génération</span>
+                            <span class="info-value" id="modalGeneration"></span>
+                        </div>
                     </div>
                 </div>
                 
-                <div class="creator-social">
-                    <h4>Me suivre</h4>
-                    <div class="social-icons">
-                        <a href="https://www.facebook.com/profile.php?id=61574871225572" target="_blank" class="social-icon facebook" title="Facebook">
-                            <i class="fab fa-facebook-f"></i>
-                            <span>Facebook</span>
-                        </a>
-                        <a href="https://wa.me/+237652153075" target="_blank" class="social-icon whatsapp" title="Whatsapp">
-                            <i class="fab fa-whatsapp"></i>
-                            <span>Whatsapp</span>
-                        </a>
-                        <a href="https://www.linkedin.com/in/emmanuel-romaric-abolo-32934128a?utm_source" target="_blank" class="social-icon linkedin" title="LinkedIn">
-                            <i class="fab fa-linkedin-in"></i>
-                            <span>LinkedIn</span>
-                        </a>
-                        <a href="https://www.tiktok.com/@romaricabolo335?_=ZM-91EwVpRyPpU" target="_blank" class="social-icon tiktok" title="Tiktok">
-                            <i class="fab fa-tiktok"></i>
-                            <span>Tiktok</span>
-                        </a>
-                        <a href="https://github.com/romaricabolo" target="_blank" class="social-icon github" title="GitHub">
-                            <i class="fab fa-github"></i>
-                            <span>GitHub</span>
-                        </a>
-                        <a href="mailto:romaricabolo@gmail.com" class="social-icon email" title="Email">
-                            <i class="fas fa-envelope"></i>
-                            <span>Email</span>
-                        </a>
+                <div class="modal-section">
+                    <h3>Connexions familiales</h3>
+                    <div class="family-connections">
+                        <div class="connection-card">
+                            <div class="connection-name" id="modalFather"></div>
+                            <div class="connection-role">Père</div>
+                        </div>
+                        <div class="connection-card">
+                            <div class="connection-name" id="modalMother"></div>
+                            <div class="connection-role">Mère</div>
+                        </div>
+                        <div class="connection-card">
+                            <div class="connection-name" id="modalSpouse"></div>
+                            <div class="connection-role">Conjoint(e)</div>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <h4>Enfants</h4>
+                        <ul id="modalChildren"></ul>
                     </div>
                 </div>
             </div>
-        </div>
-        
-        <div class="footer-bottom">
-            <p>Ce site a été créé avec passion pour honorer la mémoire de nos ancêtres</p>
+            
+            <div class="modal-actions">
+                <button class="btn modal-close" id="modalClose">
+                    <i class="fas fa-times"></i>
+                    Fermer
+                </button>
+                <button class="btn btn-primary" onclick="highlightFamily()">
+                    <i class="fas fa-users"></i>
+                    Voir la famille
+                </button>
+            </div>
         </div>
     </div>
-</footer>
 
-   <script src="fonctions.js"></script>
+    <!-- En-tête principal -->
+    <header class="site-header">
+        <div class="main-container">
+            <div class="header-content">
+                <h1>Famille MBOZO'O</h1>
+                <p class="header-tagline">Cinq générations d'histoire et de traditions familiales</p>
+                <div class="header-actions">
+                    <a href="photos.html" class="btn btn-photos">
+                        <i class="fas fa-images"></i>
+                        Photos Souvenirs
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                    <button class="btn btn-secondary" onclick="resetZoom()">
+                        <i class="fas fa-expand"></i>
+                        Vue d'ensemble
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
 
+    <!-- Contenu principal -->
+    <main class="main-container">
+        <!-- Section de recherche -->
+        <section class="search-section">
+            <div class="search-container">
+                <div class="search-box">
+                    <div class="search-input-wrapper">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" 
+                               class="search-input" 
+                               id="searchInput" 
+                               placeholder="Rechercher un membre de la famille...">
+                    </div>
+                    <button class="btn btn-primary" id="searchBtn">
+                        <i class="fas fa-search"></i>
+                        Rechercher
+                    </button>
+                    <button class="btn" id="clearSearchBtn" style="background-color: #95a5a6; color: white;">
+                        <i class="fas fa-times"></i>
+                        Effacer
+                    </button>
+                </div>
+                
+                <div class="search-controls">
+                    <div class="search-filters">
+                        <select class="filter-select" id="searchFilter">
+                            <option value="all">Rechercher dans tout</option>
+                            <option value="name">Nom et prénom</option>
+                            <option value="firstName">Prénom uniquement</option>
+                            <option value="lastName">Nom de famille</option>
+                        </select>
+                        <select class="filter-select" id="generationFilter">
+                            <option value="all">Toutes générations</option>
+                            <option value="1">1ère génération</option>
+                            <option value="2">2ème génération</option>
+                            <option value="3">3ème génération</option>
+                            <option value="4">4ème génération</option>
+                            <option value="5">5ème génération</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="search-results-info" id="searchResultsInfo">
+                    Tapez un nom pour rechercher un membre de la famille
+                </div>
+                
+                <!-- Suggestions de recherche -->
+                <div class="search-suggestions" id="searchSuggestions"></div>
+            </div>
+        </section>
+
+        <!-- Navigation par générations -->
+        <section class="generation-nav">
+            <div class="nav-buttons">
+                <button class="nav-btn active" data-gen="all">
+                    <i class="fas fa-layer-group"></i>
+                    Toutes générations
+                </button>
+                <button class="nav-btn" data-gen="1">
+                    <i class="fas fa-tree"></i>
+                    1ère génération
+                    <span class="member-count">(2)</span>
+                </button>
+                <button class="nav-btn" data-gen="2">
+                    <i class="fas fa-tree"></i>
+                    2ème génération
+                    <span class="member-count">(10)</span>
+                </button>
+                <button class="nav-btn" data-gen="3">
+                    <i class="fas fa-tree"></i>
+                    3ème génération
+                    <span class="member-count">(47)</span>
+                </button>
+                <button class="nav-btn" data-gen="4">
+                    <i class="fas fa-tree"></i>
+                    4ème génération
+                    <span class="member-count">(84)</span>
+                </button>
+                <button class="nav-btn" data-gen="5">
+                    <i class="fas fa-tree"></i>
+                    5ème génération
+                    <span class="member-count">(1)</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Arbre généalogique interactif -->
+        <section class="tree-section">
+            <div class="tree-container" id="treeContainer">
+                <div class="tree-wrapper" id="treeWrapper">
+                    <!-- L'arbre sera généré dynamiquement -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Légende et contrôles -->
+        <section class="controls-section">
+            <div class="legend-container">
+                <div class="legend-section">
+                    <h3>Légende des générations</h3>
+                    <div class="legend-items">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: var(--gen1-color);"></div>
+                            <span class="legend-text">1ère génération - Ancêtres</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: var(--gen2-color);"></div>
+                            <span class="legend-text">2ème génération - Enfants</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: var(--gen3-color);"></div>
+                            <span class="legend-text">3ème génération - Petits-enfants</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: var(--gen4-color);"></div>
+                            <span class="legend-text">4ème génération - Arrière-petits-enfants</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: var(--gen5-color);"></div>
+                            <span class="legend-text">5ème génération</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="legend-section">
+                    <h3>Contrôles de navigation</h3>
+                    <div class="tree-controls">
+                        <div class="zoom-controls">
+                            <button class="zoom-btn" id="zoomOut" title="Zoom arrière">
+                                <i class="fas fa-search-minus"></i>
+                            </button>
+                            <span>Zoom</span>
+                            <button class="zoom-btn" id="zoomIn" title="Zoom avant">
+                                <i class="fas fa-search-plus"></i>
+                            </button>
+                            <button class="zoom-btn" id="zoomReset" title="Réinitialiser">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                        </div>
+                        <div class="mt-2">
+                            <p class="legend-text">• <strong>Cliquez</strong> sur un membre pour voir ses informations</p>
+                            <p class="legend-text">• <strong>Glissez</strong> pour naviguer dans l'arbre</p>
+                            <p class="legend-text">• <strong>Molette</strong> pour zoomer</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Pied de page -->
+    <footer class="site-footer">
+        <div class="main-container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Arbre Généalogique MBOZO'O</h3>
+                    <p>Ce site honore la mémoire de nos ancêtres et préserve l'héritage familial pour les générations futures. Chaque nom, chaque visage raconte une partie de notre histoire commune.</p>
+                    <p class="copyright">© <span id="currentYear"></span> - Tous droits réservés</p>
+                </div>
+                
+                <div class="footer-section">
+                    <div class="creator-card">
+                        <div class="creator-info">
+                            <div class="creator-name">Emmanuel Romaric ABOLO</div>
+                            <div class="creator-title">Créateur & Développeur</div>
+                            <div class="social-links">
+                                <a href="https://www.facebook.com/profile.php?id=61574871225572" target="_blank" class="social-link" title="Facebook">
+                                    <i class="fab fa-facebook-f"></i>
+                                </a>
+                                <a href="https://wa.me/+237652153075" target="_blank" class="social-link" title="WhatsApp">
+                                    <i class="fab fa-whatsapp"></i>
+                                </a>
+                                <a href="https://www.linkedin.com/in/emmanuel-romaric-abolo-32934128a" target="_blank" class="social-link" title="LinkedIn">
+                                    <i class="fab fa-linkedin-in"></i>
+                                </a>
+                                <a href="https://www.tiktok.com/@romaricabolo335" target="_blank" class="social-link" title="TikTok">
+                                    <i class="fab fa-tiktok"></i>
+                                </a>
+                                <a href="https://github.com/romaricabolo" target="_blank" class="social-link" title="GitHub">
+                                    <i class="fab fa-github"></i>
+                                </a>
+                                <a href="mailto:romaricabolo@gmail.com" class="social-link" title="Email">
+                                    <i class="fas fa-envelope"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>Site créé avec passion pour célébrer les liens familiaux qui nous unissent à travers le temps</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="fonctions.js"></script>
 </body>
 </html>

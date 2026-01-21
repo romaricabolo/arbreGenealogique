@@ -166,6 +166,8 @@ body {
     margin-bottom: 2rem;
     box-shadow: var(--shadow-lg);
     border: 1px solid rgba(255, 255, 255, 0.2);
+    position: relative;
+    z-index: 100;
 }
 
 .search-container {
@@ -885,11 +887,12 @@ body {
     background: white;
     border: 1px solid var(--medium-gray);
     border-radius: var(--border-radius-sm);
-    max-height: 300px;
+    max-height: 400px;
     overflow-y: auto;
-    z-index: 1000;
+    z-index: 9999;
     box-shadow: var(--shadow-lg);
     display: none;
+    margin-top: 5px;
 }
 
 .search-suggestions.active {

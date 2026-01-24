@@ -136,27 +136,57 @@ function generateModernFamilyTree() {
         membersByGeneration[generation].push(member);
     });
     
-    // Calculer les positions des nœuds
+    // Calculer les positions des nœuds avec espacement amélioré
     let yPos = 50;
     const generations = Object.keys(membersByGeneration).sort((a, b) => a - b);
+    const containerWidth = document.getElementById('treeContainer').clientWidth;
     
     generations.forEach(generation => {
         const members = membersByGeneration[generation];
         const count = members.length;
-        const xSpacing = Math.min(1000 / (count + 1), 200); // Espacement maximum 200px
         
-        members.forEach((member, index) => {
-            const xPos = (index + 1) * xSpacing;
-            nodePositions[member.ID] = { x: xPos, y: yPos, generation: generation };
+        // Calculer l'espacement optimal pour éviter la superposition
+        const minNodeWidth = 220; // Largeur minimale d'un nœud
+        const horizontalPadding = 40; // Marge latérale
+        const availableWidth = containerWidth - (horizontalPadding * 2);
+        
+        // Vérifier si on a assez d'espace
+        const neededWidth = count * minNodeWidth;
+        
+        if (neededWidth > availableWidth) {
+            // Pas assez d'espace, on utilise le défilement horizontal
+            let xPos = horizontalPadding;
+            members.forEach((member, index) => {
+                nodePositions[member.ID] = { x: xPos, y: yPos, generation: generation };
+                
+                // Créer le nœud
+                const node = createModernNode(member);
+                node.style.left = `${xPos}px`;
+                node.style.top = `${yPos}px`;
+                treeWrapper.appendChild(node);
+                
+                xPos += minNodeWidth + 20; // Espacement entre les nœuds
+            });
             
-            // Créer le nœud
-            const node = createModernNode(member);
-            node.style.left = `${xPos}px`;
-            node.style.top = `${yPos}px`;
-            treeWrapper.appendChild(node);
-        });
+            // Ajuster la largeur du wrapper pour permettre le défilement
+            treeWrapper.style.minWidth = `${xPos + horizontalPadding}px`;
+        } else {
+            // Assez d'espace, centrer les nœuds
+            const xSpacing = availableWidth / (count + 1);
+            
+            members.forEach((member, index) => {
+                const xPos = horizontalPadding + ((index + 1) * xSpacing) - (minNodeWidth / 2);
+                nodePositions[member.ID] = { x: xPos, y: yPos, generation: generation };
+                
+                // Créer le nœud
+                const node = createModernNode(member);
+                node.style.left = `${xPos}px`;
+                node.style.top = `${yPos}px`;
+                treeWrapper.appendChild(node);
+            });
+        }
         
-        yPos += 120;
+        yPos += 150; // Espacement vertical entre générations (augmenté)
     });
     
     // Créer les connexions entre les nœuds
@@ -167,6 +197,24 @@ function generateModernFamilyTree() {
     
     // Mettre à jour la légende
     updateLegendCounts(membersByGeneration);
+    
+    // Ajuster la hauteur du wrapper
+    treeWrapper.style.minHeight = `${yPos + 50}px`;
+}
+//FONCTION POUR AJUSTER LA TAILLE DE L
+function adjustTreeContainerSize() {
+    const treeContainer = document.getElementById('treeContainer');
+    const treeWrapper = document.getElementById('treeWrapper');
+    
+    // S'assurer que le container est assez grand
+    treeContainer.style.minHeight = '600px';
+    treeContainer.style.overflow = 'auto';
+    
+    // Redimensionner lors du redimensionnement de la fenêtre
+    window.addEventListener('resize', function() {
+        // Regénérer l'arbre pour réajuster les positions
+        generateModernFamilyTree();
+    });
 }
 
 // ============================
@@ -378,6 +426,8 @@ function initEvents() {
             }
         }
     }, 1500);
+     // Ajuster la taille du container de l'arbre
+    setTimeout(adjustTreeContainerSize, 100);
 }
 
 // ============================

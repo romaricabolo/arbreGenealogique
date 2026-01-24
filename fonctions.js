@@ -67,6 +67,10 @@ async function loadFamilyData() {
             if (Array.isArray(data)) {
                 familyMembers = data;
                 console.log(`${familyMembers.length} membres chargés`);
+                 // Remplir la liste déroulante après le chargement
+                setTimeout(() => {
+                    populateMemberSelect();
+                }, 100);
             } else {
                 throw new Error("Format de fichier non reconnu");
             }
@@ -77,6 +81,10 @@ async function loadFamilyData() {
         console.error("Erreur de chargement:", error);
         showNotification("Erreur de chargement des données. Utilisation des données d'exemple.", "error");
         loadSampleData();
+        // Remplir quand même la liste avec les données d'exemple
+        setTimeout(() => {
+            populateMemberSelect();
+        }, 100);
     }
     
     // Générer l'arbre généalogique moderne
@@ -428,6 +436,20 @@ function initEvents() {
     }, 1500);
      // Ajuster la taille du container de l'arbre
     setTimeout(adjustTreeContainerSize, 100);
+    // Dans initEvents(), ajoutez ce raccourci clavier
+    document.addEventListener('keydown', function(e) {
+        // Ctrl+F ou Cmd+F pour focus la recherche
+        if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+            e.preventDefault();
+            document.getElementById('searchInput').focus();
+        }
+        
+        // Ctrl+L ou Cmd+L pour focus la liste déroulante
+        if ((e.ctrlKey || e.metaKey) && e.key === 'l') {
+            e.preventDefault();
+            document.getElementById('memberSelect').focus();
+        }
+    });
 }
 
 // ============================
@@ -906,4 +928,182 @@ function highlightFamily() {
     });
     
     showNotification(`${familyMemberIds.size} membres de la famille surlignés`, "success");
+}
+
+// Fonction pour remplir la liste déroulante
+function populateMemberSelect() {
+    const memberSelect = document.getElementById('memberSelect');
+    
+    // Vider les options existantes (garder la première option)
+    while (memberSelect.options.length > 1) {
+        memberSelect.remove(1);
+    }
+    
+    // Trier les membres par nom et prénom
+    const sortedMembers = [...familyMembers].sort((a, b) => {
+        const nameA = `${a.Prennom || ''} ${a.Nom || ''}`.toLowerCase();
+        const nameB = `${b.Prennom || ''} ${b.Nom || ''}`.toLowerCase();
+        return nameA.localeCompare(nameB);
+    });
+    
+    // Ajouter chaque membre à la liste
+    sortedMembers.forEach(member => {
+        const fullName = `${member.Prennom || ''} ${member.Nom || ''}`;
+        const generation = member.Generation;
+        
+        const option = document.createElement('option');
+        option.value = member.ID;
+        option.textContent = `${fullName} (Génération ${generation})`;
+        memberSelect.appendChild(option);
+    });
+    
+    // Ajouter l'événement de changement
+    memberSelect.addEventListener('change', function() {
+        const selectedId = this.value;
+        if (selectedId) {
+            selectMemberById(selectedId);
+            // Réinitialiser la sélection
+            this.value = '';
+        }
+    });
+}
+
+// Fonction pour sélectionner un membre depuis la liste
+function selectMemberById(memberId) {
+    const member = familyMembers.find(m => m.ID === memberId);
+    if (!member) {
+        showNotification("Membre non trouvé", "error");
+        return;
+    }
+    
+    // Mettre à jour le membre sélectionné
+    selectedMemberId = memberId;
+    
+    // Retirer la classe active de tous les nœuds
+    document.querySelectorAll('.family-node').forEach(node => {
+        node.classList.remove('active');
+        node.classList.remove('highlighted');
+    });
+    
+    // Ajouter la classe active au nœud correspondant
+    const node = document.querySelector(`.family-node[data-id="${memberId}"]`);
+    if (node) {
+        node.classList.add('active');
+        
+        // Centrer le nœud dans la vue
+        centerNode(node);
+        
+        // Afficher les informations du membre
+        showMemberModal(memberId);
+        
+        // Animation de surbrillance
+        node.classList.add('highlighted');
+        setTimeout(() => node.classList.remove('highlighted'), 2000);
+        
+        showNotification(`${member.Prennom} ${member.Nom} sélectionné`, "success");
+    } else {
+        showNotification("Membre sélectionné non visible dans la vue actuelle", "error");
+    }
+}
+
+// Fonction pour centrer un nœud (améliorée)
+function centerNode(node) {
+    if (!node) return;
+    
+    const treeContainer = document.getElementById('treeContainer');
+    const treeWrapper = document.getElementById('treeWrapper');
+    
+    // Calculer la position du nœud dans le wrapper
+    const nodeRect = node.getBoundingClientRect();
+    const wrapperRect = treeWrapper.getBoundingClientRect();
+    const containerRect = treeContainer.getBoundingClientRect();
+    
+    // Position relative du nœud dans le wrapper
+    const nodeCenterX = nodeRect.left - wrapperRect.left + nodeRect.width / 2;
+    const nodeCenterY = nodeRect.top - wrapperRect.top + nodeRect.height / 2;
+    
+    // Calculer le déplacement nécessaire pour centrer le nœud
+    panOffset.x = (containerRect.width / 2 - nodeCenterX) / zoomLevel;
+    panOffset.y = (containerRect.height / 2 - nodeCenterY) / zoomLevel;
+    
+    // Limiter le déplacement pour éviter de sortir des limites
+    const wrapperWidth = treeWrapper.offsetWidth;
+    const wrapperHeight = treeWrapper.offsetHeight;
+    
+    const maxOffsetX = (wrapperWidth * zoomLevel - containerRect.width) / (2 * zoomLevel);
+    const maxOffsetY = (wrapperHeight * zoomLevel - containerRect.height) / (2 * zoomLevel);
+    
+    panOffset.x = Math.max(Math.min(panOffset.x, maxOffsetX), -maxOffsetX);
+    panOffset.y = Math.max(Math.min(panOffset.y, maxOffsetY), -maxOffsetY);
+    
+    // Appliquer la transformation
+    applyTreeTransform();
+    
+    // Ajouter un effet de transition douce
+    treeWrapper.style.transition = 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
+    setTimeout(() => {
+        treeWrapper.style.transition = '';
+    }, 500);
+}
+
+//-------------------------------------
+//INDICATEUR DE CHARGEMENT DE LA LISTE
+//-------------------------------------
+function populateMemberSelect() {
+    const memberSelect = document.getElementById('memberSelect');
+    const selectIcon = document.querySelector('.select-icon');
+    
+    // Afficher un indicateur de chargement
+    selectIcon.className = 'fas fa-spinner fa-spin select-icon';
+    
+    // Vider les options
+    while (memberSelect.options.length > 1) {
+        memberSelect.remove(1);
+    }
+    
+    // Ajouter une option temporaire
+    const loadingOption = document.createElement('option');
+    loadingOption.value = "";
+    loadingOption.textContent = "Chargement des membres...";
+    loadingOption.disabled = true;
+    memberSelect.appendChild(loadingOption);
+    
+    // Simuler un délai pour le chargement (ou charger en arrière-plan)
+    setTimeout(() => {
+        // Retirer l'option de chargement
+        memberSelect.remove(memberSelect.options.length - 1);
+        
+        // Trier et ajouter les membres
+        const sortedMembers = [...familyMembers].sort((a, b) => {
+            const nameA = `${a.Prennom || ''} ${a.Nom || ''}`.toLowerCase();
+            const nameB = `${b.Prennom || ''} ${b.Nom || ''}`.toLowerCase();
+            return nameA.localeCompare(nameB);
+        });
+        
+        sortedMembers.forEach(member => {
+            const fullName = `${member.Prennom || ''} ${member.Nom || ''}`;
+            const generation = member.Generation;
+            
+            const option = document.createElement('option');
+            option.value = member.ID;
+            option.textContent = `${fullName} (Génération ${generation})`;
+            memberSelect.appendChild(option);
+        });
+        
+        // Restaurer l'icône normale
+        selectIcon.className = 'fas fa-chevron-down select-icon';
+        
+        // Activer le select
+        memberSelect.disabled = false;
+        
+    }, 300);
+    
+    // Événement de changement
+    memberSelect.addEventListener('change', function() {
+        const selectedId = this.value;
+        if (selectedId) {
+            selectMemberById(selectedId);
+            this.value = '';
+        }
+    });
 }

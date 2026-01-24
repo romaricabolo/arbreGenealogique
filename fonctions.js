@@ -132,6 +132,12 @@ function generateModernFamilyTree() {
     const treeWrapper = document.getElementById('treeWrapper');
     treeWrapper.innerHTML = '';
     
+    // Réinitialiser le style
+    treeWrapper.style.display = 'block';
+    treeWrapper.style.position = 'relative';
+    treeWrapper.style.minWidth = 'auto';
+    treeWrapper.style.minHeight = 'auto';
+    
     // Organiser les membres par génération
     const membersByGeneration = {};
     const nodePositions = {};
@@ -146,49 +152,45 @@ function generateModernFamilyTree() {
         membersByGeneration[generation].push(member);
     });
     
-    // Calculer les positions des nœuds avec espacement amélioré
-    let yPos = 50;
+    // Calculer les positions avec plus d'espace
+    let yPos = 80;
     const generations = Object.keys(membersByGeneration).sort((a, b) => a - b);
     const containerWidth = document.getElementById('treeContainer').clientWidth;
+    const nodeWidth = 220;
+    const horizontalPadding = 50;
     
     generations.forEach(generation => {
         const members = membersByGeneration[generation];
         const count = members.length;
         
-        // Calculer l'espacement optimal pour éviter la superposition
-        const minNodeWidth = 220; // Largeur minimale d'un nœud
-        const horizontalPadding = 40; // Marge latérale
+        // Calculer l'espace disponible
         const availableWidth = containerWidth - (horizontalPadding * 2);
-        
-        // Vérifier si on a assez d'espace
-        const neededWidth = count * minNodeWidth;
+        const neededWidth = count * nodeWidth + (count - 1) * 30;
         
         if (neededWidth > availableWidth) {
-            // Pas assez d'espace, on utilise le défilement horizontal
+            // Pas assez d'espace, on crée un défilement horizontal
             let xPos = horizontalPadding;
             members.forEach((member, index) => {
                 nodePositions[member.ID] = { x: xPos, y: yPos, generation: generation };
                 
-                // Créer le nœud
                 const node = createModernNode(member);
                 node.style.left = `${xPos}px`;
                 node.style.top = `${yPos}px`;
                 treeWrapper.appendChild(node);
                 
-                xPos += minNodeWidth + 20; // Espacement entre les nœuds
+                xPos += nodeWidth + 30;
             });
             
-            // Ajuster la largeur du wrapper pour permettre le défilement
+            // Ajuster la largeur minimale pour permettre le défilement
             treeWrapper.style.minWidth = `${xPos + horizontalPadding}px`;
         } else {
             // Assez d'espace, centrer les nœuds
-            const xSpacing = availableWidth / (count + 1);
+            const startX = (availableWidth - neededWidth) / 2 + horizontalPadding;
             
             members.forEach((member, index) => {
-                const xPos = horizontalPadding + ((index + 1) * xSpacing) - (minNodeWidth / 2);
+                const xPos = startX + (index * (nodeWidth + 30));
                 nodePositions[member.ID] = { x: xPos, y: yPos, generation: generation };
                 
-                // Créer le nœud
                 const node = createModernNode(member);
                 node.style.left = `${xPos}px`;
                 node.style.top = `${yPos}px`;
@@ -196,20 +198,21 @@ function generateModernFamilyTree() {
             });
         }
         
-        yPos += 150; // Espacement vertical entre générations (augmenté)
+        yPos += 160; // Plus d'espace vertical
     });
     
-    // Créer les connexions entre les nœuds
+    // Créer les connexions
     createNodeConnections(nodePositions);
     
-    // Mettre à jour les compteurs de génération
-    updateGenerationCounts(membersByGeneration);
+    // Ajuster la hauteur
+    treeWrapper.style.minHeight = `${yPos + 100}px`;
     
-    // Mettre à jour la légende
+    // Mettre à jour les compteurs
+    updateGenerationCounts(membersByGeneration);
     updateLegendCounts(membersByGeneration);
     
-    // Ajuster la hauteur du wrapper
-    treeWrapper.style.minHeight = `${yPos + 50}px`;
+    // Réinitialiser le zoom
+    resetZoom();
 }
 //FONCTION POUR AJUSTER LA TAILLE DE L
 function adjustTreeContainerSize() {
@@ -490,6 +493,7 @@ function initEvents() {
             document.getElementById('memberSelect').focus();
         }
     });
+    document.getElementById('mobileModalClose').addEventListener('click', closeModal);
 }
 
 // ============================
@@ -1155,6 +1159,7 @@ function populateMemberSelect() {
 // ============================
 
 // Fonction pour afficher tous les descendants d'un membre
+// Fonction pour afficher tous les descendants d'un membre (version améliorée)
 function showDescendants() {
     if (!selectedMemberId) {
         showNotification("Veuillez sélectionner un membre d'abord", "error");
@@ -1171,8 +1176,11 @@ function showDescendants() {
     // Trouver tous les descendants
     descendantIds = getAllDescendants(selectedMemberId);
     
-    // Afficher uniquement les descendants et le parent racine
-    filterToDescendants(selectedMemberId, descendantIds);
+    // Masquer tous les nœuds et connexions
+    clearAllNodesAndConnections();
+    
+    // Regénérer l'arbre avec uniquement les descendants
+    generateDescendantsTree(selectedMemberId, descendantIds);
     
     // Mettre à jour l'indicateur de vue
     updateViewModeIndicator();
@@ -1185,6 +1193,231 @@ function showDescendants() {
     
     // Afficher une notification
     showNotification(`Affichage des ${descendantIds.size} descendants de ${rootMember.Prennom} ${rootMember.Nom}`, "success");
+}
+
+// Fonction pour effacer tous les nœuds et connexions
+function clearAllNodesAndConnections() {
+    const treeWrapper = document.getElementById('treeWrapper');
+    treeWrapper.innerHTML = '';
+    
+    // Réinitialiser le wrapper
+    treeWrapper.style.display = 'block';
+    treeWrapper.style.minWidth = 'auto';
+    treeWrapper.style.minHeight = 'auto';
+    treeWrapper.style.transform = 'scale(1) translate(0px, 0px)';
+}
+
+// Fonction pour générer l'arbre des descendants optimisé
+function generateDescendantsTree(rootId, descendantIds) {
+    const treeWrapper = document.getElementById('treeWrapper');
+    
+    // Organiser les descendants par génération
+    const descendantsByGeneration = {};
+    
+    descendantIds.forEach(id => {
+        const member = familyMembers.find(m => m.ID === id);
+        if (member) {
+            const generation = member.Generation;
+            if (!descendantsByGeneration[generation]) {
+                descendantsByGeneration[generation] = [];
+            }
+            descendantsByGeneration[generation].push(member);
+        }
+    });
+    
+    // Trier les générations
+    const generations = Object.keys(descendantsByGeneration).sort((a, b) => a - b);
+    
+    // Calculer les positions optimisées
+    const nodePositions = {};
+    const containerWidth = document.getElementById('treeContainer').clientWidth;
+    const verticalSpacing = 150;
+    const horizontalSpacing = 200;
+    const nodeWidth = 220;
+    
+    let yPos = 80; // Position verticale de départ
+    
+    // Pour chaque génération
+    generations.forEach((generation, genIndex) => {
+        const members = descendantsByGeneration[generation];
+        const count = members.length;
+        
+        // Calculer la position horizontale centrale
+        const totalWidthNeeded = count * nodeWidth + (count - 1) * 40;
+        const startX = (containerWidth - totalWidthNeeded) / 2;
+        
+        // Positionner chaque membre de la génération
+        members.forEach((member, index) => {
+            const xPos = startX + (index * (nodeWidth + 40));
+            nodePositions[member.ID] = { x: xPos, y: yPos, generation: generation };
+            
+            // Créer le nœud avec style spécial
+            const node = createDescendantNode(member, member.ID === rootId);
+            node.style.left = `${xPos}px`;
+            node.style.top = `${yPos}px`;
+            treeWrapper.appendChild(node);
+        });
+        
+        yPos += verticalSpacing;
+    });
+    
+    // Créer les connexions uniquement entre descendants
+    createDescendantConnections(nodePositions, descendantIds);
+    
+    // Ajuster la taille du wrapper
+    const lastGenY = yPos - verticalSpacing + 100;
+    treeWrapper.style.minHeight = `${lastGenY}px`;
+    
+    // Centrer sur le parent racine
+    setTimeout(() => {
+        const rootNode = document.querySelector(`.family-node[data-id="${rootId}"]`);
+        if (rootNode) {
+            centerNode(rootNode);
+        }
+    }, 100);
+
+    setTimeout(() => {
+        const rootNode = document.querySelector(`.family-node[data-id="${rootId}"]`);
+        if (rootNode) {
+            centerNode(rootNode);
+        }
+        
+        // Ajuster le zoom après un court délai
+        setTimeout(zoomToFitDescendants, 200);
+    }, 100);
+     // À la fin, attendre que l'arbre soit généré avant le zoom
+    waitForTreeGeneration(() => {
+        const rootNode = document.querySelector(`.family-node[data-id="${rootId}"]`);
+        if (rootNode) {
+            centerNode(rootNode);
+        }
+        
+        // Ajuster le zoom
+        setTimeout(zoomToFitDescendants, 300);
+    });
+}
+
+
+// Fonction pour créer un nœud de descendant
+function createDescendantNode(member, isRoot = false) {
+    const node = document.createElement('div');
+    node.className = `family-node gen-${member.Generation}`;
+    if (isRoot) node.classList.add('descendant-main');
+    node.classList.add('descendant-highlight');
+    node.dataset.id = member.ID;
+    node.dataset.generation = member.Generation;
+    
+    // Initiales pour l'avatar
+    const firstName = member.Prennom || '';
+    const lastName = member.Nom || '';
+    const initials = (firstName.charAt(0) + lastName.charAt(0)).toUpperCase();
+    
+    // Icone de genre
+    const gender = member.Sexe;
+    const genderIcon = gender === 'F' ? '♀' : (gender === 'M' ? '♂' : '');
+    
+    // Date de naissance formatée
+    const birthDate = member.DateNaissance;
+    let yearInfo = '';
+    if (birthDate && birthDate !== '0000-00-00') {
+        const year = birthDate.substring(0, 4);
+        if (year !== '0000') {
+            yearInfo = `Né(e) en ${year}`;
+        }
+    }
+    
+    // Compter le nombre d'enfants (descendants directs)
+    const childrenCount = familyMembers.filter(m => 
+        (m.ID_Pere === member.ID || m.ID_Mere === member.ID) && 
+        descendantIds.has(m.ID)
+    ).length;
+    
+    node.innerHTML = `
+        <div class="node-header">
+            <div class="node-avatar" style="background: ${isRoot ? 'linear-gradient(135deg, var(--secondary-color), var(--accent-color))' : 'linear-gradient(135deg, var(--gen4-color), var(--accent-color))'};">
+                ${member.URL_img ? 
+                    `<img src="${member.URL_img}" alt="${firstName} ${lastName}" 
+                         onerror="this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='${initials}'">` 
+                    : `<span>${initials}</span>`}
+            </div>
+            <div>
+                <div class="node-name">${firstName} ${lastName} ${genderIcon}</div>
+                <div class="node-details">${yearInfo || 'Date inconnue'}</div>
+            </div>
+        </div>
+        <div class="node-relation">${getRelationText(member)}</div>
+        ${childrenCount > 0 ? `<div class="node-children-count"><i class="fas fa-child"></i> ${childrenCount} enfant${childrenCount > 1 ? 's' : ''}</div>` : ''}
+    `;
+    
+    return node;
+}
+
+// Fonction pour créer les connexions entre descendants
+function createDescendantConnections(nodePositions, descendantIds) {
+    descendantIds.forEach(id => {
+        const member = familyMembers.find(m => m.ID === id);
+        if (!member) return;
+        
+        const childPos = nodePositions[id];
+        if (!childPos) return;
+        
+        // Connexion avec le père si le père est dans les descendants
+        if (member.ID_Pere && descendantIds.has(member.ID_Pere)) {
+            const parentPos = nodePositions[member.ID_Pere];
+            if (parentPos) {
+                createDescendantConnection(parentPos, childPos, 'parent');
+            }
+        }
+        
+        // Connexion avec la mère si la mère est dans les descendants
+        if (member.ID_Mere && descendantIds.has(member.ID_Mere)) {
+            const parentPos = nodePositions[member.ID_Mere];
+            if (parentPos) {
+                createDescendantConnection(parentPos, childPos, 'parent');
+            }
+        }
+    });
+}
+
+// Fonction pour créer une connexion de descendant
+function createDescendantConnection(fromPos, toPos, type) {
+    const treeWrapper = document.getElementById('treeWrapper');
+    
+    const connection = document.createElement('div');
+    connection.className = 'tree-connection descendant-connection';
+    
+    // Calculer la longueur et l'angle
+    const dx = toPos.x + 110 - (fromPos.x + 110); // 110 = moitié de la largeur du nœud
+    const dy = toPos.y - (fromPos.y + 50); // 50 = hauteur du nœud
+    const length = Math.sqrt(dx * dx + dy * dy);
+    const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+    
+    connection.style.width = `${length}px`;
+    connection.style.height = '3px';
+    connection.style.left = `${fromPos.x + 110}px`;
+    connection.style.top = `${fromPos.y + 50}px`;
+    connection.style.transform = `rotate(${angle}deg)`;
+    connection.style.transformOrigin = '0 0';
+    connection.style.background = 'linear-gradient(90deg, var(--accent-color), var(--gen4-color))';
+    connection.style.boxShadow = '0 2px 4px rgba(243, 156, 18, 0.3)';
+    connection.style.zIndex = '5';
+    
+    // Ajouter un point de jonction
+    const junction = document.createElement('div');
+    junction.className = 'connection-junction';
+    junction.style.cssText = `
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        background: var(--secondary-color);
+        border-radius: 50%;
+        left: 0;
+        top: -4px;
+        box-shadow: 0 0 5px rgba(24, 188, 156, 0.8);
+    `;
+    connection.appendChild(junction);
+    
+    treeWrapper.appendChild(connection);
 }
 
 // Fonction récursive pour trouver tous les descendants
@@ -1311,7 +1544,7 @@ function resetFamilyView() {
     if (allBtn) {
         allBtn.click();
     }
-    
+    generateModernFamilyTree()
     showNotification("Vue complète restaurée", "success");
 }
 
@@ -1539,4 +1772,86 @@ function exportDescendantsReport() {
     document.body.removeChild(link);
     
     showNotification("Rapport exporté avec succès", "success");
+}
+// Fonction pour ajuster automatiquement le zoom pour voir tous les descendants
+function zoomToFitDescendants() {
+    const treeWrapper = document.getElementById('treeWrapper');
+    const treeContainer = document.getElementById('treeContainer');
+    
+    // Utiliser offsetWidth/Height pour les dimensions réelles
+    const wrapperWidth = treeWrapper.offsetWidth;
+    const wrapperHeight = treeWrapper.offsetHeight;
+    const containerWidth = treeContainer.clientWidth;
+    const containerHeight = treeContainer.clientHeight;
+    
+    // Si le wrapper est vide ou trop petit, ne rien faire
+    if (wrapperWidth === 0 || wrapperHeight === 0) {
+        zoomLevel = 1;
+        panOffset.x = 0;
+        panOffset.y = 0;
+        applyTreeTransform();
+        return;
+    }
+    
+    // Calculer le ratio nécessaire pour tout faire rentrer
+    const widthRatio = containerWidth / wrapperWidth;
+    const heightRatio = containerHeight / wrapperHeight;
+    
+    // Prendre le ratio le plus petit pour tout faire rentrer
+    let newZoom = Math.min(widthRatio, heightRatio) * 0.85; // 85% pour laisser de la marge
+    
+    // Limiter le zoom (ne pas trop dézoomer)
+    newZoom = Math.max(0.3, Math.min(newZoom, 1.5));
+    
+    // Appliquer le nouveau zoom
+    zoomLevel = newZoom;
+    
+    // Calculer le centre de l'arbre
+    const wrapperCenterX = wrapperWidth / 2;
+    const wrapperCenterY = wrapperHeight / 2;
+    const containerCenterX = containerWidth / 2;
+    const containerCenterY = containerHeight / 2;
+    
+    // Calculer le décalage pour centrer
+    panOffset.x = (containerCenterX / zoomLevel) - wrapperCenterX;
+    panOffset.y = (containerCenterY / zoomLevel) - wrapperCenterY;
+    
+    // Limiter le décalage pour éviter le dépassement
+    const maxOffsetX = Math.max(0, (wrapperWidth * zoomLevel - containerWidth) / (2 * zoomLevel));
+    const maxOffsetY = Math.max(0, (wrapperHeight * zoomLevel - containerHeight) / (2 * zoomLevel));
+    
+    panOffset.x = Math.max(Math.min(panOffset.x, maxOffsetX), -maxOffsetX);
+    panOffset.y = Math.max(Math.min(panOffset.y, maxOffsetY), -maxOffsetY);
+    
+    // Appliquer avec une transition douce
+    treeWrapper.style.transition = 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
+    applyTreeTransform();
+    
+    // Retirer la transition après l'animation
+    setTimeout(() => {
+        treeWrapper.style.transition = '';
+    }, 500);
+}
+
+// Fonction pour attendre que l'arbre soit complètement généré
+function waitForTreeGeneration(callback) {
+    const treeWrapper = document.getElementById('treeWrapper');
+    let attempts = 0;
+    const maxAttempts = 50; // 5 secondes max
+    
+    const checkInterval = setInterval(() => {
+        attempts++;
+        
+        // Vérifier si l'arbre a des enfants et des dimensions
+        if (treeWrapper.children.length > 0 && 
+            treeWrapper.offsetWidth > 0 && 
+            treeWrapper.offsetHeight > 0) {
+            clearInterval(checkInterval);
+            callback();
+        } else if (attempts >= maxAttempts) {
+            clearInterval(checkInterval);
+            console.log("Timeout: L'arbre n'a pas pu être généré complètement");
+            callback();
+        }
+    }, 100);
 }

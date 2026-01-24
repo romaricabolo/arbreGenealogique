@@ -17,6 +17,10 @@
     <!-- Modal d'informations -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="member-modal">
+            <!-- Bouton Fermer pour mobile -->
+            <button class="mobile-close-btn" id="mobileModalClose">
+                <i class="fas fa-times"></i>
+            </button>
             <div class="modal-header">
                 <div class="modal-avatar" id="modalAvatar"></div>
                 <div class="modal-title">
@@ -109,8 +113,12 @@
                         <i class="fas fa-chevron-down select-icon"></i>
                     </div>
                     <div class="view-mode-indicator" id="viewModeIndicator" style="display: none;">
-                        <span id="currentViewText"></span>
-                        <button class="btn-reset-view" onclick="resetFamilyView()">
+                        <i class="fas fa-sitemap"></i>
+                        <div>
+                            <div class="current-view-text" id="currentViewText"></div>
+                            <div style="font-size: 0.8rem; opacity: 0.9;">Cliquez sur la croix pour revenir à la vue complète</div>
+                        </div>
+                        <button class="btn-reset-view" onclick="resetFamilyView()" title="Revenir à la vue complète">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>

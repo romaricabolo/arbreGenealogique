@@ -1064,3 +1064,114 @@ body {
     0% { transform: translateY(-50%) rotate(0deg); }
     100% { transform: translateY(-50%) rotate(360deg); }
 }
+/* ======================== */
+/*  FONCTIONNALITÉ DESCENDANTS */
+/* ======================== */
+.btn-descendants {
+    background: linear-gradient(135deg, var(--gen4-color), var(--accent-color));
+    color: white;
+    border: none;
+}
+
+.btn-descendants:hover {
+    background: linear-gradient(135deg, var(--gen5-color), var(--gen4-color));
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.view-mode-indicator {
+    background: linear-gradient(135deg, var(--secondary-color), var(--accent-color));
+    color: white;
+    padding: 10px 15px;
+    border-radius: var(--border-radius-sm);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: slideDown 0.3s ease;
+    box-shadow: var(--shadow-md);
+    margin-left: auto;
+}
+
+.btn-reset-view {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-reset-view:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+}
+
+/* Styles pour les nœuds de descendants */
+.family-node.descendant-highlight {
+    border: 3px solid var(--accent-color) !important;
+    box-shadow: 0 0 20px rgba(243, 156, 18, 0.3);
+    animation: pulseDescendant 2s infinite;
+}
+
+.family-node.descendant-main {
+    border: 4px solid var(--secondary-color) !important;
+    box-shadow: 0 0 25px rgba(24, 188, 156, 0.4);
+    transform: scale(1.05);
+    z-index: 1000;
+}
+
+@keyframes pulseDescendant {
+    0% {
+        box-shadow: 0 0 0 0 rgba(243, 156, 18, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(243, 156, 18, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(243, 156, 18, 0);
+    }
+}
+
+/* Légende pour la vue descendants */
+.descendants-legend {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: var(--border-radius);
+    padding: 15px;
+    margin: 10px auto 20px;
+    max-width: 1200px;
+    box-shadow: var(--shadow-lg);
+    display: none;
+}
+
+.descendants-legend.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+.legend-descendant-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.legend-descendant-color {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+}
+
+.legend-descendant-main {
+    background-color: var(--secondary-color);
+    border: 2px solid white;
+}
+
+.legend-descendant-highlight {
+    background-color: var(--accent-color);
+}

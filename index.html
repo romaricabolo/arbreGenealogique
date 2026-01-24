@@ -76,6 +76,10 @@
                     <i class="fas fa-users"></i>
                     Voir la famille
                 </button>
+                <button class="btn btn-descendants" onclick="showDescendants()" id="descendantsBtn">
+                    <i class="fas fa-sitemap"></i>
+                    Voir tous les descendants
+                </button>
             </div>
         </div>
     </div>
@@ -103,6 +107,12 @@
                             <!-- Les options seront ajoutées dynamiquement -->
                         </select>
                         <i class="fas fa-chevron-down select-icon"></i>
+                    </div>
+                    <div class="view-mode-indicator" id="viewModeIndicator" style="display: none;">
+                        <span id="currentViewText"></span>
+                        <button class="btn-reset-view" onclick="resetFamilyView()">
+                            <i class="fas fa-times"></i>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -254,6 +264,9 @@
                     </div>
                 </div>
             </div>
+        </section>
+        <section class="descendants-legend" id="descendantsLegend">
+            <!-- Le contenu sera généré dynamiquement -->
         </section>
     </main>
 

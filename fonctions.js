@@ -11,7 +11,9 @@ let isDragging = false;
 let startDragPos = { x: 0, y: 0 };
 let lastScrollTop = 0;
 let isHeaderVisible = true;
-
+let currentViewMode = 'all'; // 'all', 'descendants', 'family'
+let currentDescendantRoot = null;
+let descendantIds = new Set();
 // ============================
 // INITIALISATION
 // ============================
@@ -338,6 +340,44 @@ function createConnection(x1, y1, x2, y2, type) {
 // GESTION DES ÉVÉNEMENTS
 // ============================
 function initEvents() {
+    //Gestion de l'arbre généalogique des descendants
+    document.addEventListener('click', function(e) {
+    const node = e.target.closest('.family-node');
+    if (node) {
+        const memberId = node.dataset.id;
+        
+        // En mode descendant, permettre la sélection d'autres descendants
+        if (currentViewMode === 'descendants' && descendantIds.has(memberId)) {
+            selectedMemberId = memberId;
+            showMemberModal(memberId);
+            
+            // Mettre en surbrillance uniquement dans le groupe descendant
+            document.querySelectorAll('.family-node').forEach(n => {
+                n.classList.remove('active');
+                if (descendantIds.has(n.dataset.id)) {
+                    n.classList.add('descendant-highlight');
+                }
+            });
+            node.classList.add('active');
+            node.classList.remove('descendant-highlight');
+            
+            centerNode(node);
+        } else {
+            // Comportement normal
+            selectedMemberId = memberId;
+            showMemberModal(memberId);
+            
+            document.querySelectorAll('.family-node').forEach(n => {
+                n.classList.remove('active');
+                n.classList.remove('highlighted');
+            });
+            node.classList.add('active');
+            
+            centerNode(node);
+        }
+    }
+    });
+
     // Navigation entre générations
     document.querySelectorAll('.nav-btn').forEach(button => {
         button.addEventListener('click', function() {
@@ -1106,4 +1146,397 @@ function populateMemberSelect() {
             this.value = '';
         }
     });
+}
+//----------------------------------------------
+//FONCTION L'ARBRE GENEAL D'UN MEMBRE SPECIFIQUE
+//----------------------------------------------
+// ============================
+// FONCTIONS POUR LES DESCENDANTS
+// ============================
+
+// Fonction pour afficher tous les descendants d'un membre
+function showDescendants() {
+    if (!selectedMemberId) {
+        showNotification("Veuillez sélectionner un membre d'abord", "error");
+        return;
+    }
+    
+    const rootMember = familyMembers.find(m => m.ID === selectedMemberId);
+    if (!rootMember) return;
+    
+    // Définir le mode de vue
+    currentViewMode = 'descendants';
+    currentDescendantRoot = selectedMemberId;
+    
+    // Trouver tous les descendants
+    descendantIds = getAllDescendants(selectedMemberId);
+    
+    // Afficher uniquement les descendants et le parent racine
+    filterToDescendants(selectedMemberId, descendantIds);
+    
+    // Mettre à jour l'indicateur de vue
+    updateViewModeIndicator();
+    
+    // Afficher la légende des descendants
+    showDescendantsLegend(rootMember);
+    
+    // Fermer la modal
+    closeModal();
+    
+    // Afficher une notification
+    showNotification(`Affichage des ${descendantIds.size} descendants de ${rootMember.Prennom} ${rootMember.Nom}`, "success");
+}
+
+// Fonction récursive pour trouver tous les descendants
+function getAllDescendants(memberId, descendants = new Set()) {
+    // Ajouter le membre actuel (pour inclure le parent racine)
+    descendants.add(memberId);
+    
+    // Trouver tous les enfants directs
+    const children = familyMembers.filter(member => 
+        member.ID_Pere === memberId || member.ID_Mere === memberId
+    );
+    
+    // Pour chaque enfant, trouver ses descendants
+    children.forEach(child => {
+        descendants.add(child.ID);
+        getAllDescendants(child.ID, descendants);
+    });
+    
+    return descendants;
+}
+
+// Fonction pour filtrer l'affichage aux descendants uniquement
+function filterToDescendants(rootId, descendantIds) {
+    // Masquer tous les nœuds
+    document.querySelectorAll('.family-node').forEach(node => {
+        node.style.display = 'none';
+        node.classList.remove('descendant-highlight');
+        node.classList.remove('descendant-main');
+        node.classList.remove('active');
+        node.classList.remove('highlighted');
+    });
+    
+    // Masquer toutes les connexions
+    document.querySelectorAll('.tree-connection').forEach(conn => {
+        conn.style.display = 'none';
+    });
+    
+    // Afficher uniquement les descendants
+    descendantIds.forEach(id => {
+        const node = document.querySelector(`.family-node[data-id="${id}"]`);
+        if (node) {
+            node.style.display = 'block';
+            
+            // Appliquer les styles spéciaux
+            if (id === rootId) {
+                node.classList.add('descendant-main');
+            } else {
+                node.classList.add('descendant-highlight');
+            }
+        }
+        
+        // Afficher les connexions entre descendants
+        const member = familyMembers.find(m => m.ID === id);
+        if (member) {
+            // Connexion avec le père si le père est aussi un descendant
+            if (member.ID_Pere && descendantIds.has(member.ID_Pere)) {
+                showConnection(member.ID_Pere, id, 'descendant');
+            }
+            
+            // Connexion avec la mère si la mère est aussi un descendant
+            if (member.ID_Mere && descendantIds.has(member.ID_Mere)) {
+                showConnection(member.ID_Mere, id, 'descendant');
+            }
+        }
+    });
+    
+    // Désactiver la navigation par génération
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.disabled = true;
+        btn.style.opacity = '0.5';
+    });
+}
+
+// Fonction pour afficher une connexion
+function showConnection(parentId, childId, type) {
+    const connections = document.querySelectorAll('.tree-connection');
+    connections.forEach(conn => {
+        // Cette logique dépend de comment vos connexions sont identifiées
+        // Vous devrez peut-être ajuster cette fonction selon votre implémentation
+        conn.style.display = 'block';
+        if (type === 'descendant') {
+            conn.style.background = 'linear-gradient(90deg, var(--accent-color), var(--gen4-color))';
+            conn.style.height = '3px';
+        }
+    });
+}
+
+// Fonction pour réinitialiser la vue complète
+function resetFamilyView() {
+    currentViewMode = 'all';
+    currentDescendantRoot = null;
+    descendantIds.clear();
+    
+    // Afficher tous les nœuds
+    document.querySelectorAll('.family-node').forEach(node => {
+        node.style.display = 'block';
+        node.classList.remove('descendant-highlight');
+        node.classList.remove('descendant-main');
+        node.classList.remove('active');
+        node.classList.remove('highlighted');
+    });
+    
+    // Afficher toutes les connexions
+    document.querySelectorAll('.tree-connection').forEach(conn => {
+        conn.style.display = 'block';
+        conn.style.background = '';
+        conn.style.height = '2px';
+    });
+    
+    // Réactiver la navigation par génération
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.disabled = false;
+        btn.style.opacity = '1';
+    });
+    
+    // Masquer l'indicateur
+    document.getElementById('viewModeIndicator').style.display = 'none';
+    
+    // Masquer la légende
+    document.getElementById('descendantsLegend').classList.remove('active');
+    
+    // Réinitialiser le filtre de génération
+    const allBtn = document.querySelector('.nav-btn[data-gen="all"]');
+    if (allBtn) {
+        allBtn.click();
+    }
+    
+    showNotification("Vue complète restaurée", "success");
+}
+
+// Fonction pour mettre à jour l'indicateur de mode de vue
+function updateViewModeIndicator() {
+    const indicator = document.getElementById('viewModeIndicator');
+    const textElement = document.getElementById('currentViewText');
+    
+    if (currentViewMode === 'descendants' && currentDescendantRoot) {
+        const rootMember = familyMembers.find(m => m.ID === currentDescendantRoot);
+        if (rootMember) {
+            textElement.textContent = `Vue descendants de ${rootMember.Prennom} ${rootMember.Nom} (${descendantIds.size} personnes)`;
+            indicator.style.display = 'flex';
+        }
+    } else {
+        indicator.style.display = 'none';
+    }
+}
+
+// Fonction pour afficher la légende des descendants
+function showDescendantsLegend(rootMember) {
+    const legend = document.getElementById('descendantsLegend');
+    const rootName = `${rootMember.Prennom} ${rootMember.Nom}`;
+    
+    legend.innerHTML = `
+        <h4 style="margin-bottom: 15px; color: var(--primary-color);">Légende - Arbre des descendants</h4>
+        <div class="legend-descendant-item">
+            <div class="legend-descendant-color legend-descendant-main"></div>
+            <span><strong>${rootName}</strong> - Ancêtre racine</span>
+        </div>
+        <div class="legend-descendant-item">
+            <div class="legend-descendant-color legend-descendant-highlight"></div>
+            <span>Descendants (${descendantIds.size - 1} personnes)</span>
+        </div>
+        <div style="margin-top: 10px; font-size: 0.9rem; color: var(--dark-gray);">
+            <i class="fas fa-info-circle"></i> Cliquez sur le bouton <i class="fas fa-times"></i> pour revenir à la vue complète
+        </div>
+    `;
+    
+    legend.classList.add('active');
+}
+
+// Fonction pour générer un rapport des descendants
+function generateDescendantsReport(rootId) {
+    const rootMember = familyMembers.find(m => m.ID === rootId);
+    if (!rootMember) return;
+    
+    const descendants = getAllDescendants(rootId);
+    const report = {
+        root: rootMember,
+        totalDescendants: descendants.size - 1, // Exclure le parent racine
+        byGeneration: {},
+        statistics: {
+            male: 0,
+            female: 0,
+            unknown: 0,
+            withSpouse: 0,
+            withChildren: 0
+        }
+    };
+    
+    // Analyser les descendants par génération
+    descendants.forEach(id => {
+        if (id === rootId) return; // Sauter le parent racine
+        
+        const member = familyMembers.find(m => m.ID === id);
+        if (member) {
+            const gen = member.Generation;
+            if (!report.byGeneration[gen]) {
+                report.byGeneration[gen] = [];
+            }
+            report.byGeneration[gen].push(member);
+            
+            // Statistiques
+            if (member.Sexe === 'M') report.statistics.male++;
+            else if (member.Sexe === 'F') report.statistics.female++;
+            else report.statistics.unknown++;
+            
+            if (member.ConjointID) report.statistics.withSpouse++;
+            
+            const hasChildren = familyMembers.some(m => m.ID_Pere === id || m.ID_Mere === id);
+            if (hasChildren) report.statistics.withChildren++;
+        }
+    });
+    
+    return report;
+}
+
+// Fonction pour afficher un rapport détaillé
+function showDescendantsReport() {
+    if (!currentDescendantRoot) return;
+    
+    const report = generateDescendantsReport(currentDescendantRoot);
+    const rootMember = report.root;
+    
+    let reportHTML = `
+        <div style="max-height: 400px; overflow-y: auto; padding: 20px;">
+            <h3 style="color: var(--primary-color); margin-bottom: 20px;">
+                Rapport des descendants - ${rootMember.Prennom} ${rootMember.Nom}
+            </h3>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                <div style="background: var(--light-color); padding: 15px; border-radius: var(--border-radius-sm);">
+                    <div style="font-size: 2rem; font-weight: bold; color: var(--secondary-color);">
+                        ${report.totalDescendants}
+                    </div>
+                    <div style="font-size: 0.9rem; color: var(--dark-gray);">Total descendants</div>
+                </div>
+                
+                <div style="background: var(--light-color); padding: 15px; border-radius: var(--border-radius-sm);">
+                    <div style="font-size: 2rem; font-weight: bold; color: var(--gen2-color);">
+                        ${report.statistics.male}
+                    </div>
+                    <div style="font-size: 0.9rem; color: var(--dark-gray);">Hommes</div>
+                </div>
+                
+                <div style="background: var(--light-color); padding: 15px; border-radius: var(--border-radius-sm);">
+                    <div style="font-size: 2rem; font-weight: bold; color: var(--gen1-color);">
+                        ${report.statistics.female}
+                    </div>
+                    <div style="font-size: 0.9rem; color: var(--dark-gray);">Femmes</div>
+                </div>
+            </div>
+            
+            <h4 style="color: var(--primary-color); margin-bottom: 15px;">Répartition par génération</h4>
+    `;
+    
+    Object.keys(report.byGeneration).sort().forEach(gen => {
+        const members = report.byGeneration[gen];
+        reportHTML += `
+            <div style="margin-bottom: 15px; padding: 10px; background: var(--light-color); border-radius: var(--border-radius-sm);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <span style="font-weight: bold; color: var(--dark-color);">
+                        Génération ${gen}
+                    </span>
+                    <span style="background: var(--secondary-color); color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8rem;">
+                        ${members.length} personne${members.length > 1 ? 's' : ''}
+                    </span>
+                </div>
+                <div style="font-size: 0.9rem; color: var(--dark-gray);">
+                    ${members.map(m => `${m.Prennom} ${m.Nom}`).join(', ')}
+                </div>
+            </div>
+        `;
+    });
+    
+    reportHTML += `
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--medium-gray);">
+                <button class="btn btn-primary" onclick="exportDescendantsReport()" style="width: 100%;">
+                    <i class="fas fa-download"></i> Exporter le rapport
+                </button>
+            </div>
+        </div>
+    `;
+    
+    // Afficher dans une modal
+    showCustomModal('Rapport des descendants', reportHTML);
+}
+
+// Fonction pour afficher une modal personnalisée
+function showCustomModal(title, content) {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+        <div class="member-modal" style="max-width: 600px;">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <h2>${title}</h2>
+                </div>
+            </div>
+            <div class="modal-content">
+                ${content}
+            </div>
+            <div class="modal-actions">
+                <button class="btn modal-close" onclick="this.closest('.modal-overlay').remove()">
+                    <i class="fas fa-times"></i>
+                    Fermer
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    modal.classList.add('active');
+}
+
+// Fonction pour exporter le rapport
+function exportDescendantsReport() {
+    if (!currentDescendantRoot) return;
+    
+    const report = generateDescendantsReport(currentDescendantRoot);
+    const rootMember = report.root;
+    
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "Rapport des descendants - " + rootMember.Prennom + " " + rootMember.Nom + "\n";
+    csvContent += "ID,Prénom,Nom,Génération,Sexe,Date de naissance,Père,Mère,Conjoint\n";
+    
+    descendantIds.forEach(id => {
+        const member = familyMembers.find(m => m.ID === id);
+        if (member) {
+            const father = member.ID_Pere ? familyMembers.find(m => m.ID === member.ID_Pere) : null;
+            const mother = member.ID_Mere ? familyMembers.find(m => m.ID === member.ID_Mere) : null;
+            const spouse = member.ConjointID ? familyMembers.find(m => m.ID === member.ConjointID) : null;
+            
+            csvContent += [
+                member.ID,
+                `"${member.Prennom || ''}"`,
+                `"${member.Nom || ''}"`,
+                member.Generation,
+                member.Sexe,
+                member.DateNaissance,
+                father ? `"${father.Prennom} ${father.Nom}"` : '',
+                mother ? `"${mother.Prennom} ${mother.Nom}"` : '',
+                spouse ? `"${spouse.Prennom} ${spouse.Nom}"` : ''
+            ].join(',') + "\n";
+        }
+    });
+    
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `descendants_${rootMember.Prennom}_${rootMember.Nom}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    showNotification("Rapport exporté avec succès", "success");
 }

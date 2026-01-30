@@ -120,7 +120,7 @@ function loadSampleData() {
             "ID_Pere": "",
             "ID_Mere": "",
             "ConjointID": "P001",
-            "URL_img": ""
+            "URL_img": "./images/analia.jpg"
         }
     ];
 }
@@ -212,7 +212,7 @@ function generateModernFamilyTree() {
     updateLegendCounts(membersByGeneration);
     
     // Réinitialiser le zoom
-    resetZoom();
+    //resetZoom();
 }
 //FONCTION POUR AJUSTER LA TAILLE DE L
 function adjustTreeContainerSize() {
@@ -502,12 +502,6 @@ function initEvents() {
 function zoomTree(delta) {
     const treeWrapper = document.getElementById('treeWrapper');
     zoomLevel = Math.min(Math.max(0.5, zoomLevel + delta), 3);
-    applyTreeTransform();
-}
-
-function resetZoom() {
-    zoomLevel = 1;
-    panOffset = { x: 0, y: 0 };
     applyTreeTransform();
 }
 

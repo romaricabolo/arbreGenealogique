@@ -1008,7 +1008,7 @@ body {
     font-size: 0.95rem;
     color: var(--dark-color);
     font-weight: bold;
-    text-align: center;
+    /* text-align: center;*/
     cursor: pointer;
     transition: var(--transition);
     appearance: none;

@@ -570,6 +570,7 @@ function centerNode(node) {
 // ============================
 // MODAL D'INFORMATIONS
 // ============================
+// Fonction pour afficher la modal des informations
 function showMemberModal(memberId) {
     const member = familyMembers.find(m => m.ID === memberId);
     if (!member) {
@@ -577,11 +578,26 @@ function showMemberModal(memberId) {
         return;
     }
     
+    // MODIFICATION ICI : Gestion multiple des conjoints
+    // Si ConjointID contient plusieurs IDs séparés par des virgules
+    let spouseIds = [];
+    if (member.ConjointID) {
+        // Sépare par virgule ou espace et nettoie
+        spouseIds = member.ConjointID.split(/[, ]+/).filter(id => id.trim() !== '');
+    }
+    
+    // Trouver les conjoints
+    const spouses = spouseIds
+        .map(id => familyMembers.find(m => m.ID === id.trim()))
+        .filter(spouse => spouse); // Enlève les undefined
+    
     // Trouver les informations connexes
     const father = member.ID_Pere ? familyMembers.find(m => m.ID === member.ID_Pere) : null;
     const mother = member.ID_Mere ? familyMembers.find(m => m.ID === member.ID_Mere) : null;
-    const spouse = member.ConjointID ? familyMembers.find(m => m.ID === member.ConjointID) : null;
-    const children = familyMembers.filter(m => m.ID_Pere === memberId || m.ID_Mere === memberId);
+    const children = familyMembers.filter(m => 
+        m.ID_Pere === memberId || 
+        m.ID_Mere === memberId
+    );
     
     // Initiales pour l'avatar
     const firstName = member.Prennom || '';
@@ -620,7 +636,22 @@ function showMemberModal(memberId) {
     // Connexions familiales
     document.getElementById('modalFather').textContent = father ? `${father.Prennom} ${father.Nom}` : 'Inconnu';
     document.getElementById('modalMother').textContent = mother ? `${mother.Prennom} ${mother.Nom}` : 'Inconnue';
-    document.getElementById('modalSpouse').textContent = spouse ? `${spouse.Prennom} ${spouse.Nom}` : 'Aucun';
+    
+    // MODIFICATION ICI : Affichage des conjoints multiples
+    const spouseElement = document.getElementById('modalSpouse');
+    if (spouses.length === 0) {
+        spouseElement.textContent = 'Aucun';
+    } else if (spouses.length === 1) {
+        spouseElement.textContent = `${spouses[0].Prennom} ${spouses[0].Nom}`;
+    } else {
+        // Afficher tous les conjoints séparés par des virgules
+        spouseElement.textContent = spouses.map(spouse => `${spouse.Prennom} ${spouse.Nom}`).join(', ');
+        
+        // Option: Afficher sous forme de liste
+        // spouseElement.innerHTML = '<ul>' + 
+        //     spouses.map(spouse => `<li>${spouse.Prennom} ${spouse.Nom}</li>`).join('') + 
+        //     '</ul>';
+    }
     
     const childrenList = document.getElementById('modalChildren');
     childrenList.innerHTML = children.length > 0 ? 

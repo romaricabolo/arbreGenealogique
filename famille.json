@@ -44,7 +44,7 @@
     "DateNaissance": "0000-00-03",
     "ID_Pere": "P001",
     "ID_Mere": "P002",
-    "ConjointID": "P138",
+    "ConjointID": "P138, P139",
     "URL_img": "images/paEb2.jpg"
   },
   {
@@ -1648,7 +1648,7 @@
     "ID": "P138",
     "Generation": "2",
     "Prennom": "Eveline",
-    "Nom": "EYINGA",
+    "Nom": "EYINGA NGBWA",
     "Sexe": "F",
     "DateNaissance": "0000-00-24",
     "ID_Pere": "",

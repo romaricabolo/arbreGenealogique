@@ -138,17 +138,22 @@ function generateModernFamilyTree() {
     treeWrapper.style.minWidth = 'auto';
     treeWrapper.style.minHeight = 'auto';
     
+    // Filtrer uniquement les membres avec une génération définie
+    const membersWithGeneration = familyMembers.filter(member =>
+        member.Generation && member.Generation.toString().trim() !== ''
+    );
+
     // Organiser les membres par génération
     const membersByGeneration = {};
     const nodePositions = {};
     
-    familyMembers.forEach(member => {
+    membersWithGeneration.forEach(member => {
         const generation = member.Generation;
-        
+       
         if (!membersByGeneration[generation]) {
             membersByGeneration[generation] = [];
         }
-        
+       
         membersByGeneration[generation].push(member);
     });
     
@@ -881,6 +886,7 @@ function updateGenerationCounts(membersByGeneration) {
     document.querySelectorAll('.nav-btn').forEach(btn => {
         const gen = btn.dataset.gen;
         if (gen !== 'all') {
+             // Compter uniquement les membres avec génération définie
             const count = membersByGeneration[gen] ? membersByGeneration[gen].length : 0;
             let countSpan = btn.querySelector('.member-count');
             
@@ -893,6 +899,8 @@ function updateGenerationCounts(membersByGeneration) {
             countSpan.textContent = ` (${count})`;
         }
     });
+    // Mettre à jour la légende
+    updateLegendCounts(membersByGeneration);
 }
 
 function updateLegendCounts(membersByGeneration) {
@@ -1008,36 +1016,53 @@ function highlightFamily() {
 // Fonction pour remplir la liste déroulante
 function populateMemberSelect() {
     const memberSelect = document.getElementById('memberSelect');
-    
-    // Vider les options existantes (garder la première option)
+   
+    // Vider les options existantes
     while (memberSelect.options.length > 1) {
         memberSelect.remove(1);
     }
-    
-    // Trier les membres par nom et prénom
-    const sortedMembers = [...familyMembers].sort((a, b) => {
+   
+    // Filtre strict
+    const membersWithGeneration = familyMembers.filter(member => {
+        // Vérifier que Generation existe
+        if (!('Generation' in member)) return false;
+       
+        // Vérifier que ce n'est pas null/undefined
+        if (member.Generation == null) return false;
+       
+        // Convertir en string et nettoyer
+        const genStr = String(member.Generation).trim();
+       
+        // Rejeter si vide ou "0"
+        if (genStr === '' || genStr === '0' || genStr === '00') return false;
+       
+        // Accepter seulement si c'est un nombre positif
+        const genNum = parseInt(genStr, 10);
+        return !isNaN(genNum) && genNum > 0;
+    });
+   
+    // Trier et ajouter
+    const sortedMembers = [...membersWithGeneration].sort((a, b) => {
         const nameA = `${a.Prennom || ''} ${a.Nom || ''}`.toLowerCase();
         const nameB = `${b.Prennom || ''} ${b.Nom || ''}`.toLowerCase();
         return nameA.localeCompare(nameB);
     });
-    
-    // Ajouter chaque membre à la liste
+   
     sortedMembers.forEach(member => {
         const fullName = `${member.Prennom || ''} ${member.Nom || ''}`;
-        const generation = member.Generation;
-        
+        const generation = String(member.Generation).trim();
+       
         const option = document.createElement('option');
         option.value = member.ID;
         option.textContent = `${fullName} (Génération ${generation})`;
         memberSelect.appendChild(option);
     });
-    
-    // Ajouter l'événement de changement
+   
+    // Événement
     memberSelect.addEventListener('change', function() {
         const selectedId = this.value;
         if (selectedId) {
             selectMemberById(selectedId);
-            // Réinitialiser la sélection
             this.value = '';
         }
     });
@@ -1453,12 +1478,19 @@ function createDescendantConnection(fromPos, toPos, type) {
 
 // Fonction récursive pour trouver tous les descendants
 function getAllDescendants(memberId, descendants = new Set()) {
+    // Vérifier que le membre a une génération définie
+    const member = familyMembers.find(m => m.ID === memberId);
+    if (!member || !member.Generation || member.Generation.toString().trim() === '') {
+        return descendants;
+    }
+    
     // Ajouter le membre actuel (pour inclure le parent racine)
     descendants.add(memberId);
     
     // Trouver tous les enfants directs
-    const children = familyMembers.filter(member => 
-        member.ID_Pere === memberId || member.ID_Mere === memberId
+    const children = familyMembers.filter(member =>
+        (member.ID_Pere === memberId || member.ID_Mere === memberId) &&
+        member.Generation && member.Generation.toString().trim() !== ''
     );
     
     // Pour chaque enfant, trouver ses descendants

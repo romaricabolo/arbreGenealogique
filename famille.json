@@ -152,7 +152,7 @@
     "DateNaissance": "0000-00-12",
     "ID_Pere": "P003",
     "ID_Mere": "",
-    "ConjointID": "",
+    "ConjointID": "P145",
     "URL_img": "images/akonaCrepin.jpg"
   },
   {
@@ -1288,7 +1288,7 @@
     "ID": "P107",
     "Generation": "4",
     "Prennom": "Sheridane",
-    "Nom": "Eyinga Nna",
+    "Nom": "EYINGA NNA",
     "Sexe": "F",
     "DateNaissance": "0000-00-106",
     "ID_Pere": "P033",
@@ -1303,8 +1303,8 @@
     "Nom": "ENGONO",
     "Sexe": "M",
     "DateNaissance": "0000-00-107",
-    "ID_Pere": "P035",
-    "ID_Mere": "",
+    "ID_Pere": "",
+    "ID_Mere": "P035",
     "ConjointID": "",
     "URL_img": ""
   },
@@ -1646,7 +1646,7 @@
   },
   {
     "ID": "P138",
-    "Generation": "2",
+    "Generation": "",
     "Prennom": "Eveline",
     "Nom": "EYINGA NGBWA",
     "Sexe": "F",
@@ -1658,7 +1658,7 @@
   },
    {
     "ID": "P137",
-    "Generation": "2",
+    "Generation": "",
     "Prennom": "Jeanine",
     "Nom": "MFOUMOU",
     "Sexe": "F",
@@ -1671,7 +1671,7 @@
   ,
    {
     "ID": "P139",
-    "Generation": "2",
+    "Generation": "",
     "Prennom": "Marie",
     "Nom": "MALINGO",
     "Sexe": "F",
@@ -1684,7 +1684,7 @@
   ,
    {
     "ID": "P140",
-    "Generation": "2",
+    "Generation": "",
     "Prennom": "Solange",
     "Nom": "ENGOU'OU",
     "Sexe": "F",
@@ -1697,7 +1697,7 @@
   ,
    {
     "ID": "P141",
-    "Generation": "2",
+    "Generation": "",
     "Prennom": "Thérance",
     "Nom": "BIBANA",
     "Sexe": "F",
@@ -1710,7 +1710,7 @@
   ,
    {
     "ID": "P142",
-    "Generation": "2",
+    "Generation": "",
     "Prennom": "Nicole",
     "Nom": "MENDOUA",
     "Sexe": "F",
@@ -1723,7 +1723,7 @@
   ,
    {
     "ID": "P143",
-    "Generation": "2",
+    "Generation": "",
     "Prennom": "Jean Marque",
     "Nom": "ZOUAM",
     "Sexe": "M",
@@ -1736,7 +1736,7 @@
   ,
    {
     "ID": "P144",
-    "Generation": "2",
+    "Generation": "",
     "Prennom": "",
     "Nom": "ABOSSOLO",
     "Sexe": "M",
@@ -1749,7 +1749,7 @@
   ,
    {
     "ID": "P145",
-    "Generation": "3",
+    "Generation": "",
     "Prennom": "Patience",
     "Nom": "MBALA EVA",
     "Sexe": "F",
@@ -1762,7 +1762,7 @@
   ,
    {
     "ID": "P146",
-    "Generation": "3",
+    "Generation":"",
     "Prennom": "Anastasie",
     "Nom": "NGA",
     "Sexe": "F",
@@ -1775,7 +1775,7 @@
   ,
    {
     "ID": "P147",
-    "Generation": "3",
+    "Generation": "",
     "Prennom": "Ernest Panceslas",
     "Nom": "",
     "Sexe": "M",

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Arbre Généalogique de la Famille MBOZO'O</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="./style/style.css">
     <link rel="icon" type="image/x-icon" href="./images/couple2.png">
 </head>
 <body>
@@ -26,6 +26,10 @@
                 <div class="modal-title">
                     <h2 id="modalName"></h2>
                     <p id="modalTitle"></p>
+                </div>
+                 <!-- Section Contacts -->
+                <div id="contactSection" class="social-links media">
+                    <!-- Les contacts seront injectés ici par JavaScript -->
                 </div>
             </div>
             
@@ -70,19 +74,18 @@
                     </div>
                 </div>
             </div>
-            
             <div class="modal-actions">
-                <button class="btn modal-close" id="modalClose">
+                <!--<button class="btn modal-close" id="modalClose">
                     <i class="fas fa-times"></i>
                     Fermer
                 </button>
                 <button class="btn btn-primary" onclick="highlightFamily()">
                     <i class="fas fa-users"></i>
                     Voir la famille
-                </button>
+                </button>-->
                 <button class="btn btn-descendants" onclick="showDescendants()" id="descendantsBtn">
                     <i class="fas fa-sitemap"></i>
-                    Voir tous ces descendants
+                    
                 </button>
             </div>
         </div>
@@ -94,6 +97,7 @@
             <div class="header-content">
                 <h1>Famille MBOZO'O</h1>
                 <p class="header-tagline">Cinq générations d'histoire et de traditions familiales</p>
+                
                 <div class="header-actions">
                    
                     <!-- Nouvelle liste déroulante -->
@@ -162,10 +166,6 @@
                     </div>
                 </div>
                 
-                <div class="search-results-info" id="searchResultsInfo">
-                    Tapez un nom pour rechercher un membre de la famille
-                </div>
-                
             </div>
         </section>
         <!-- Navigation par générations -->
@@ -202,8 +202,22 @@
                 </button>
             </div>
         </section>
-
-        <!-- Arbre généalogique interactif -->
+        <!-- Ajout des fonctions -->
+        <div class="tree-toolbar">
+            <button onclick="showExportMenu()" class="toolbar-btn">
+                <i class="fas fa-download"></i> Exporter
+            </button>
+            <button onclick="showFamilyStatistics()" class="toolbar-btn">
+                <i class="fas fa-chart-bar"></i> Statistiques
+            </button>
+            <button onclick="toggleFullscreen()" class="toolbar-btn">
+                <i class="fas fa-expand"></i> Plein écran
+            </button>
+            <button onclick="openAddForm()" class="toolbar-btn btn-add">
+                <i class="fas fa-plus"></i> Ajouter
+            </button>
+        </div>
+                <!-- Arbre généalogique interactif -->
         <section class="tree-section">
             <div class="tree-container" id="treeContainer">
                 <div class="tree-wrapper" id="treeWrapper">
@@ -270,6 +284,115 @@
         </section>
     </main>
 
+    <!-- Overlay du formulaire d'ajout/modification -->
+    <div id="formOverlay" class="modal-overlay">
+        <div class="member-modal form-modal">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <h2 id="modalFormTitle">Ajouter un membre</h2>
+                </div>
+                <button class="modal-close" onclick="closeForm()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-content">
+                <form id="memberForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Prénom *</label>
+                            <input type="text" id="formPrenom" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Nom *</label>
+                            <input type="text" id="formNom" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Sexe</label>
+                            <select id="formSexe">
+                                <option value="M">Masculin</option>
+                                <option value="F">Féminin</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Génération *</label>
+                            <input type="number" id="formGeneration" min="1" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Date de naissance</label>
+                            <input type="date" id="formDateNaissance">
+                        </div>
+                        <div class="form-group">
+                            <label>Lieu de naissance</label>
+                            <input type="text" id="formLieuNaissance">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="formEstDecede">
+                                Décédé(e)
+                            </label>
+                        </div>
+                        <div class="form-group" id="formDateDecesGroup" style="display: none;">
+                            <label>Année de décès</label>
+                            <input type="text" id="formDateDeces" placeholder="ex: 2020">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Téléphone</label>
+                            <input type="tel" id="formTelephone" placeholder="+237...">
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="formWhatsapp">
+                                WhatsApp
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>ID Père</label>
+                            <input type="text" id="formPere" placeholder="ex: P001">
+                        </div>
+                        <div class="form-group">
+                            <label>ID Mère</label>
+                            <input type="text" id="formMere" placeholder="ex: P002">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Conjoint(s) (séparés par des virgules)</label>
+                        <input type="text" id="formConjoints" placeholder="ex: P138, P139">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>URL de l'image</label>
+                        <input type="text" id="formUrlImg" placeholder="./images/photo.jpg">
+                    </div>
+                </form>
+            </div>
+            
+            <div class="modal-actions">
+                <button id="formCancel" class="btn btn-outline">
+                    <i class="fas fa-times"></i> Annuler
+                </button>
+                <button id="formSave" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Enregistrer
+                </button>
+            </div>
+        </div>
+    </div>
     <!-- Pied de page -->
     <footer class="site-footer">
         <div class="main-container">
@@ -316,6 +439,21 @@
         </div>
     </footer>
 
-    <script src="fonctions.js"></script>
+    <script src="./js/fonctions.js"></script>
+    <script src="./js/familyManager.js"></script>
+    <script src="./js/photoGallery.js"></script>
+    <script src="./js/exportTree.js"></script>
+    <script src="./js/sharing.js"></script>
+    <script src="./js/autoSave.js"></script>
+    <script src="./js/statistics.js"></script>
+    <!--<script src="./js/theme.js"></script>-->
+
+    <!-- Pour l'export PNG/PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Pour les statistiques -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <!-- Bibliotheque pour le QR Code -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </body>
 </html>

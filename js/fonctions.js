@@ -244,6 +244,12 @@ function createModernNode(member) {
     node.dataset.id = member.ID;
     node.dataset.generation = member.Generation;
     
+     // Vérifier si décédé
+    const isDeceased = member.estDecede || false;
+    if (isDeceased) {
+        node.classList.add('deceased');
+    }
+
     // Initiales pour l'avatar
     const firstName = member.Prennom || '';
     const lastName = member.Nom || '';
@@ -263,6 +269,12 @@ function createModernNode(member) {
         }
     }
     
+     // Ajouter l'année de décès si décédé
+    let deceasedInfo = '';
+    if (isDeceased && member.anneeDeces) {
+        deceasedInfo = `<div class="node-deceased">Décédé en ${member.anneeDeces}</div>`;
+    }
+
     node.innerHTML = `
         <div class="node-header">
             <div class="node-avatar">
@@ -443,7 +455,7 @@ function initEvents() {
     });
     
     // Fermer la modal
-    document.getElementById('modalClose').addEventListener('click', closeModal);
+    //document.getElementById('modalClose').addEventListener('click', closeModal);
     document.getElementById('modalOverlay').addEventListener('click', function(e) {
         if (e.target === this) closeModal();
     });
@@ -576,6 +588,9 @@ function centerNode(node) {
 // MODAL D'INFORMATIONS
 // ============================
 // Fonction pour afficher la modal des informations
+// ============================
+// MODAL D'INFORMATIONS (VERSION COMPLÈTE AVEC TOUS LES BOUTONS)
+// ============================
 function showMemberModal(memberId) {
     const member = familyMembers.find(m => m.ID === memberId);
     if (!member) {
@@ -583,18 +598,16 @@ function showMemberModal(memberId) {
         return;
     }
     
-    // MODIFICATION ICI : Gestion multiple des conjoints
-    // Si ConjointID contient plusieurs IDs séparés par des virgules
+    // Gestion multiple des conjoints
     let spouseIds = [];
     if (member.ConjointID) {
-        // Sépare par virgule ou espace et nettoie
         spouseIds = member.ConjointID.split(/[, ]+/).filter(id => id.trim() !== '');
     }
     
     // Trouver les conjoints
     const spouses = spouseIds
         .map(id => familyMembers.find(m => m.ID === id.trim()))
-        .filter(spouse => spouse); // Enlève les undefined
+        .filter(spouse => spouse);
     
     // Trouver les informations connexes
     const father = member.ID_Pere ? familyMembers.find(m => m.ID === member.ID_Pere) : null;
@@ -604,14 +617,32 @@ function showMemberModal(memberId) {
         m.ID_Mere === memberId
     );
     
+    // Trouver tous les descendants pour la liste déroulante
+    const descendants = findDescendants(memberId);
+    
     // Initiales pour l'avatar
     const firstName = member.Prennom || '';
     const lastName = member.Nom || '';
     const initials = (firstName.charAt(0) + lastName.charAt(0)).toUpperCase() || '?';
     
+    // Vérifier si le membre est décédé
+    const isDeceased = member.estDecede || false;
+    const yearOfDeath = member.anneeDeces || '';
+    
+    // Informations de contact
+    const telephone = member.telephone || '';
+    const hasWhatsApp = member.whatsapp || false;
+    
     // Remplir la modal
     const modalAvatar = document.getElementById('modalAvatar');
     modalAvatar.innerHTML = '';
+    
+    // Ajouter un indicateur si décédé
+    if (isDeceased) {
+        modalAvatar.classList.add('deceased');
+    } else {
+        modalAvatar.classList.remove('deceased');
+    }
     
     if (member.URL_img) {
         const img = document.createElement('img');
@@ -630,8 +661,18 @@ function showMemberModal(memberId) {
         modalAvatar.appendChild(span);
     }
     
-    document.getElementById('modalName').textContent = `${firstName} ${lastName}`;
-    document.getElementById('modalTitle').textContent = `${getRelationText(member)} • Génération ${member.Generation}`;
+    // Mention décédé dans le nom
+    document.getElementById('modalName').innerHTML = `
+        ${firstName} ${lastName}
+        ${isDeceased ? '<span class="deceased-badge">Décédé(e)</span>' : ''}
+    `;
+    
+    // Titre avec année de décès
+    let titleText = `${getRelationText(member)} • Génération ${member.Generation}`;
+    if (isDeceased && yearOfDeath) {
+        titleText += ` • Décédé en ${yearOfDeath}`;
+    }
+    document.getElementById('modalTitle').textContent = titleText;
     
     // Informations personnelles
     document.getElementById('modalGender').textContent = member.Sexe === 'M' ? 'Masculin' : (member.Sexe === 'F' ? 'Féminin' : 'Non spécifié');
@@ -642,26 +683,177 @@ function showMemberModal(memberId) {
     document.getElementById('modalFather').textContent = father ? `${father.Prennom} ${father.Nom}` : 'Inconnu';
     document.getElementById('modalMother').textContent = mother ? `${mother.Prennom} ${mother.Nom}` : 'Inconnue';
     
-    // MODIFICATION ICI : Affichage des conjoints multiples
+    // Affichage des conjoints multiples
     const spouseElement = document.getElementById('modalSpouse');
     if (spouses.length === 0) {
         spouseElement.textContent = 'Aucun';
     } else if (spouses.length === 1) {
         spouseElement.textContent = `${spouses[0].Prennom} ${spouses[0].Nom}`;
     } else {
-        // Afficher tous les conjoints séparés par des virgules
         spouseElement.textContent = spouses.map(spouse => `${spouse.Prennom} ${spouse.Nom}`).join(', ');
-        
-        // Option: Afficher sous forme de liste
-        // spouseElement.innerHTML = '<ul>' + 
-        //     spouses.map(spouse => `<li>${spouse.Prennom} ${spouse.Nom}</li>`).join('') + 
-        //     '</ul>';
     }
     
+    // Enfants
     const childrenList = document.getElementById('modalChildren');
     childrenList.innerHTML = children.length > 0 ? 
         children.map(child => `<li>${child.Prennom} ${child.Nom}</li>`).join('') 
         : '<li>Aucun enfant</li>';
+    
+    // ========== SECTION CONTACTS ==========
+    const contactSection = document.getElementById('contactSection');
+    if (contactSection) {
+        contactSection.innerHTML = '';
+        if (telephone || hasWhatsApp) {
+            let contactHTML = '<h4><i class="fas fa-address-book"></i> Contacts</h4><div class="contact-buttons">';
+            if (telephone) {
+                contactHTML += `
+                    <a href="tel:${telephone}" class="contact-btn call-btn">
+                        <i class="fas fa-phone"></i>
+                    </a>
+                `;
+            }
+            if (hasWhatsApp && telephone) {
+                const whatsappNumber = telephone.replace(/[^0-9]/g, '');
+                contactHTML += `
+                    <a href="https://wa.me/${whatsappNumber}" target="_blank" class="contact-btn whatsapp-btn">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                `;
+            }
+            contactHTML += '</div>';
+            contactSection.innerHTML = contactHTML;
+        }
+    }
+    
+    // ========== SECTION DESCENDANTS ==========
+    const descendantsSection = document.getElementById('descendantsSection');
+    if (descendantsSection) {
+        descendantsSection.innerHTML = '';
+        if (descendants.length > 0) {
+            let descendantsHTML = `
+                <h4><i class="fas fa-sitemap"></i> Descendants (${descendants.length})</h4>
+                <div class="descendants-dropdown">
+                    <select id="descendantsSelect" class="descendants-select">
+                        <option value="">Sélectionner un descendant...</option>
+            `;
+            descendants.forEach(descendant => {
+                const birthYear = descendant.DateNaissance && descendant.DateNaissance !== '0000-00-00' 
+                    ? descendant.DateNaissance.substring(0, 4) 
+                    : '?';
+                const isDeceasedDesc = descendant.estDecede ? ' (Décédé)' : '';
+                descendantsHTML += `
+                    <option value="${descendant.ID}">
+                        ${descendant.Prennom} ${descendant.Nom} 
+                        (Gén. ${descendant.Generation}, ${birthYear})${isDeceasedDesc}
+                    </option>
+                `;
+            });
+            descendantsHTML += `
+                    </select>
+                    <button id="viewDescendantBtn" class="btn btn-small">
+                        <i class="fas fa-eye"></i> Voir
+                    </button>
+                </div>
+                <div class="descendants-actions">
+                    <button id="showAllDescendantsBtn" class="btn btn-outline">
+                        <i class="fas fa-sitemap"></i> Voir tous les descendants
+                    </button>
+                </div>
+            `;
+            descendantsSection.innerHTML = descendantsHTML;
+            
+            // Événements
+            document.getElementById('viewDescendantBtn').addEventListener('click', function() {
+                const select = document.getElementById('descendantsSelect');
+                const descendantId = select.value;
+                if (descendantId) {
+                    closeModal();
+                    selectMemberById(descendantId);
+                } else {
+                    showNotification("Veuillez sélectionner un descendant", "error");
+                }
+            });
+            document.getElementById('showAllDescendantsBtn').addEventListener('click', function() {
+                closeModal();
+                selectedMemberId = memberId;
+                showDescendants();
+            });
+        }
+    }
+    
+    // ========== BOUTONS D'ACTION DANS LE FOOTER ==========
+    const modalActions = document.querySelector('.modal-actions');
+    if (modalActions) {
+        // Vider les boutons existants (optionnel, selon ta structure)
+        // modalActions.innerHTML = '';
+        
+        // 1. BOUTON MODIFIER
+        if (!document.querySelector('.btn-edit')) {
+            const editBtn = document.createElement('button');
+            editBtn.className = 'btn btn-edit';
+            editBtn.innerHTML = '<i class="fas fa-edit"></i> ';
+            editBtn.onclick = function(e) {
+                e.stopPropagation();
+                if (typeof openEditForm === 'function') {
+                    openEditForm(memberId);
+                    closeModal();
+                }
+            };
+            modalActions.appendChild(editBtn);
+        }
+        
+        // 3. BOUTON GALERIE
+        if (!document.querySelector('.btn-gallery')) {
+            const galleryBtn = document.createElement('button');
+            galleryBtn.className = 'btn btn-gallery';
+            galleryBtn.innerHTML = '<i class="fas fa-images"></i>';
+            galleryBtn.onclick = function(e) {
+                e.stopPropagation();
+                if (typeof openPhotoGallery === 'function') {
+                    openPhotoGallery(memberId);
+                }
+            };
+            modalActions.appendChild(galleryBtn);
+        }
+        
+        // 4. BOUTON ANCÊTRES
+        if (!document.querySelector('.btn-ancestors')) {
+            const ancestorsBtn = document.createElement('button');
+            ancestorsBtn.className = 'btn btn-ancestors';
+            ancestorsBtn.innerHTML = '<i class="fas fa-tree"></i> ';
+            ancestorsBtn.onclick = function(e) {
+                e.stopPropagation();
+                if (typeof showAncestors === 'function') {
+                    showAncestors();
+                    closeModal();
+                }
+            };
+            modalActions.appendChild(ancestorsBtn);
+        }
+        
+        // 5. BOUTON PARTAGER
+        if (!document.querySelector('.btn-share')) {
+            const shareBtn = document.createElement('button');
+            shareBtn.className = 'btn btn-share';
+            shareBtn.innerHTML = '<i class="fas fa-share-alt"></i> ';
+            shareBtn.onclick = function(e) {
+                e.stopPropagation();
+                if (typeof shareMemberProfile === 'function') {
+                    shareMemberProfile(memberId);
+                }
+            };
+            modalActions.appendChild(shareBtn);
+        }
+        
+        // 6. BOUTON FERMER (toujours en dernier)
+        if (!document.querySelector('.modal-close-btn')) {
+            const closeBtn = document.createElement('button');
+            closeBtn.className = 'btn modal-close-btn';
+            closeBtn.innerHTML = '<i class="fas fa-times"></i>';
+            closeBtn.onclick = closeModal;
+            modalActions.appendChild(closeBtn);
+        }
+    }
     
     // Afficher la modal
     document.getElementById('modalOverlay').classList.add('active');
@@ -669,6 +861,29 @@ function showMemberModal(memberId) {
 
 function closeModal() {
     document.getElementById('modalOverlay').classList.remove('active');
+}
+
+// Ajouter le bouton de partage dans showMemberModal
+function addShareButtonToModal() {
+    const modalActions = document.querySelector('.modal-actions');
+    if (modalActions) {
+        const shareBtn = document.createElement('button');
+        shareBtn.className = 'btn btn-share';
+        shareBtn.innerHTML = '<i class="fas fa-share-alt"></i> ';
+        shareBtn.onclick = function() {
+            if (selectedMemberId) {
+                shareMemberProfile(selectedMemberId);
+            }
+        };
+        
+        // Insérer avant le bouton fermer
+        const closeBtn = modalActions.querySelector('.modal-close, [onclick="closeModal()"]');
+        if (closeBtn) {
+            modalActions.insertBefore(shareBtn, closeBtn);
+        } else {
+            modalActions.appendChild(shareBtn);
+        }
+    }
 }
 
 // ============================
@@ -1207,15 +1422,10 @@ function populateMemberSelect() {
         }
     });
 }
-//----------------------------------------------
-//FONCTION L'ARBRE GENEAL D'UN MEMBRE SPECIFIQUE
-//----------------------------------------------
 // ============================
 // FONCTIONS POUR LES DESCENDANTS
 // ============================
 
-// Fonction pour afficher tous les descendants d'un membre
-// Fonction pour afficher tous les descendants d'un membre (version améliorée)
 function showDescendants() {
     if (!selectedMemberId) {
         showNotification("Veuillez sélectionner un membre d'abord", "error");
@@ -1249,6 +1459,341 @@ function showDescendants() {
     
     // Afficher une notification
     showNotification(`Affichage des ${descendantIds.size} descendants de ${rootMember.Prennom} ${rootMember.Nom}`, "success");
+}
+
+// ============================
+// FONCTIONS D'ASCENDANCE
+// ============================
+
+// Trouver tous les ancêtres d'un membre
+// ============================
+// FONCTIONS D'ASCENDANCE
+// ============================
+
+// Trouver tous les ancêtres d'un membre
+function findAncestors(memberId, maxGenerations = 5) {
+    const ancestors = [];
+    const processed = new Set();
+    
+    function searchParents(id, generation = 1) {
+        if (generation > maxGenerations) return;
+        if (processed.has(id)) return;
+        
+        const member = familyMembers.find(m => m.ID === id);
+        if (!member) return;
+        
+        processed.add(id);
+        
+        // Père
+        if (member.ID_Pere) {
+            const father = familyMembers.find(m => m.ID === member.ID_Pere);
+            if (father && !processed.has(father.ID)) {
+                ancestors.push({
+                    ...father,
+                    relation: 'Père',
+                    genLevel: generation,
+                    genText: generation === 1 ? 'Parents' :
+                            generation === 2 ? 'Grands-parents' :
+                            generation === 3 ? 'Arrière-grands-parents' :
+                            `Arrière (${generation})`
+                });
+                searchParents(father.ID, generation + 1);
+            }
+        }
+        
+        // Mère
+        if (member.ID_Mere) {
+            const mother = familyMembers.find(m => m.ID === member.ID_Mere);
+            if (mother && !processed.has(mother.ID)) {
+                ancestors.push({
+                    ...mother,
+                    relation: 'Mère',
+                    genLevel: generation,
+                    genText: generation === 1 ? 'Parents' :
+                            generation === 2 ? 'Grands-parents' :
+                            generation === 3 ? 'Arrière-grands-parents' :
+                            `Arrière (${generation})`
+                });
+                searchParents(mother.ID, generation + 1);
+            }
+        }
+    }
+    
+    searchParents(memberId, 1);
+    
+    // Trier par génération
+    return ancestors.sort((a, b) => a.genLevel - b.genLevel);
+}
+
+// Afficher l'arbre ascendant
+function showAncestors() {
+    if (!selectedMemberId) {
+        showNotification("Veuillez sélectionner un membre", "error");
+        return;
+    }
+    
+    const member = familyMembers.find(m => m.ID === selectedMemberId);
+    if (!member) return;
+    
+    const ancestors = findAncestors(selectedMemberId, 5);
+    
+    let html = `
+        <div class="ancestors-container">
+            <div class="ancestors-header">
+                <h3>
+                    <i class="fas fa-tree"></i> 
+                    Ascendance de ${member.Prennom} ${member.Nom}
+                </h3>
+                <p class="ancestors-count">
+                    ${ancestors.length} ancêtre${ancestors.length > 1 ? 's' : ''} trouvé${ancestors.length > 1 ? 's' : ''}
+                </p>
+            </div>
+    `;
+    
+    if (ancestors.length === 0) {
+        html += '<p class="no-data">Aucun ancêtre trouvé</p>';
+    } else {
+        // Grouper par niveau
+        const byGeneration = {};
+        ancestors.forEach(a => {
+            if (!byGeneration[a.genLevel]) {
+                byGeneration[a.genLevel] = [];
+            }
+            byGeneration[a.genLevel].push(a);
+        });
+        
+        // Afficher par niveau
+        for (let gen = 1; gen <= 5; gen++) {
+            if (byGeneration[gen]) {
+                const genName = gen === 1 ? 'Parents' :
+                               gen === 2 ? 'Grands-parents' :
+                               gen === 3 ? 'Arrière-grands-parents' :
+                               `Arrière-grands-parents (${gen}e génération)`;
+                
+                html += `
+                    <div class="ancestor-generation">
+                        <div class="ancestor-gen-header">
+                            <span class="ancestor-gen-title">${genName}</span>
+                            <span class="ancestor-gen-count">${byGeneration[gen].length}</span>
+                        </div>
+                        <div class="ancestor-grid">
+                `;
+                
+                byGeneration[gen].forEach(ancestor => {
+                    const birthYear = ancestor.DateNaissance && ancestor.DateNaissance !== '0000-00-00' 
+                        ? ancestor.DateNaissance.substring(0, 4) 
+                        : '?';
+                    
+                    const death = ancestor.estDecede && ancestor.anneeDeces 
+                        ? `- ${ancestor.anneeDeces}` 
+                        : '';
+                    
+                    const gender = ancestor.Sexe === 'M' ? '♂' : ancestor.Sexe === 'F' ? '♀' : '';
+                    
+                    html += `
+                        <div class="ancestor-card" onclick="selectMemberById('${ancestor.ID}')">
+                            <div class="ancestor-avatar">
+                                <span>${ancestor.Prennom?.charAt(0) || ''}${ancestor.Nom?.charAt(0) || ''}</span>
+                            </div>
+                            <div class="ancestor-info">
+                                <div class="ancestor-name">
+                                    <strong>${ancestor.Prennom} ${ancestor.Nom}</strong> ${gender}
+                                </div>
+                                <div class="ancestor-dates">
+                                    ${birthYear} ${death}
+                                </div>
+                                <div class="ancestor-relation">
+                                    <i class="fas fa-${ancestor.relation === 'Père' ? 'mars' : 'venus'}"></i>
+                                    ${ancestor.relation}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += `
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        
+        // Arbre en éventail
+        html += `
+            <div class="ancestor-tree">
+                <h4><i class="fas fa-sitemap"></i> Arbre ascendant simplifié</h4>
+                <div class="ancestor-fan">
+                    ${generateAncestorFan(selectedMemberId, 3)}
+                </div>
+            </div>
+        `;
+    }
+    
+    html += `
+        <div class="ancestors-footer">
+            <button onclick="exportAncestors()" class="btn btn-outline">
+                <i class="fas fa-download"></i> Exporter
+            </button>
+        </div>
+    </div>
+    `;
+    
+    showCustomModal('Arbre ascendant', html);
+}
+
+// Générer un arbre en éventail
+function generateAncestorFan(memberId, maxGen = 3, currentGen = 1) {
+    const member = familyMembers.find(m => m.ID === memberId);
+    if (!member || currentGen > maxGen) return '';
+    
+    let html = `<div class="fan-node">`;
+    
+    if (currentGen === 1) {
+        html += `<div class="fan-root">${member.Prennom} ${member.Nom}</div>`;
+    }
+    
+    if (member.ID_Pere || member.ID_Mere) {
+        html += `<div class="fan-parents">`;
+        
+        // Père
+        if (member.ID_Pere) {
+            const father = familyMembers.find(m => m.ID === member.ID_Pere);
+            html += `<div class="fan-parent">
+                <div class="fan-parent-name" onclick="selectMemberById('${father.ID}')">
+                    👨 ${father.Prennom} ${father.Nom}
+                </div>
+                ${generateAncestorFan(father.ID, maxGen, currentGen + 1)}
+            </div>`;
+        } else {
+            html += `<div class="fan-parent fan-unknown">👨 Inconnu</div>`;
+        }
+        
+        // Mère
+        if (member.ID_Mere) {
+            const mother = familyMembers.find(m => m.ID === member.ID_Mere);
+            html += `<div class="fan-parent">
+                <div class="fan-parent-name" onclick="selectMemberById('${mother.ID}')">
+                    👩 ${mother.Prennom} ${mother.Nom}
+                </div>
+                ${generateAncestorFan(mother.ID, maxGen, currentGen + 1)}
+            </div>`;
+        } else {
+            html += `<div class="fan-parent fan-unknown">👩 Inconnue</div>`;
+        }
+        
+        html += `</div>`;
+    }
+    
+    html += `</div>`;
+    return html;
+}
+
+// Exporter les ancêtres
+function exportAncestors() {
+    if (!selectedMemberId) return;
+    
+    const member = familyMembers.find(m => m.ID === selectedMemberId);
+    const ancestors = findAncestors(selectedMemberId, 5);
+    
+    let content = `ASCENDANCE DE ${member.Prennom} ${member.Nom}\n`;
+    content += `Généré le ${new Date().toLocaleDateString('fr-FR')}\n`;
+    content += `Nombre d'ancêtres: ${ancestors.length}\n\n`;
+    
+    ancestors.forEach(a => {
+        content += `${'  '.repeat(a.genLevel - 1)}├─ ${a.genText} : ${a.Prennom} ${a.Nom} (${a.relation})\n`;
+    });
+    
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `ascendance_${member.Prennom}_${member.Nom}.txt`;
+    link.click();
+    URL.revokeObjectURL(url);
+    
+    showNotification("Ascendance exportée", "success");
+}
+
+// Afficher l'arbre ascendant
+function showAncestors() {
+    if (!selectedMemberId) {
+        showNotification("Veuillez sélectionner un membre", "error");
+        return;
+    }
+    
+    const member = familyMembers.find(m => m.ID === selectedMemberId);
+    const ancestors = findAncestors(selectedMemberId, 5);
+    
+    let html = `
+        <div class="ancestors-container">
+            <h3>Ancêtres de ${member.Prennom} ${member.Nom}</h3>
+            <p class="ancestors-count">${ancestors.length} ancêtre(s) trouvé(s)</p>
+    `;
+    
+    if (ancestors.length === 0) {
+        html += '<p class="no-data">Aucun ancêtre trouvé</p>';
+    } else {
+        // Grouper par génération
+        const byGeneration = {};
+        ancestors.forEach(a => {
+            if (!byGeneration[a.ancestorGeneration]) {
+                byGeneration[a.ancestorGeneration] = [];
+            }
+            byGeneration[a.ancestorGeneration].push(a);
+        });
+        
+        // Afficher par niveau
+        for (let gen = 1; gen <= 5; gen++) {
+            if (byGeneration[gen]) {
+                html += `<div class="ancestor-gen">
+                    <h4>Génération +${gen} (Arrière${'grand-'.repeat(gen-1)}parents)</h4>
+                    <div class="ancestor-grid">
+                `;
+                
+                byGeneration[gen].forEach(ancestor => {
+                    const birthYear = ancestor.DateNaissance && ancestor.DateNaissance !== '0000-00-00' 
+                        ? ancestor.DateNaissance.substring(0, 4) 
+                        : '?';
+                    const deceased = ancestor.estDecede ? 'Décédé' : 'Vivant';
+                    
+                    html += `
+                        <div class="ancestor-card" onclick="selectMemberById('${ancestor.ID}')">
+                            <div class="ancestor-avatar">
+                                <span>${ancestor.Prennom?.charAt(0) || ''}${ancestor.Nom?.charAt(0) || ''}</span>
+                            </div>
+                            <div class="ancestor-info">
+                                <strong>${ancestor.Prennom} ${ancestor.Nom}</strong>
+                                <small>${birthYear} • ${deceased}</small>
+                                <span class="ancestor-relation">${ancestor.relation}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div></div>';
+            }
+        }
+    }
+    
+    html += '</div>';
+    
+    // Afficher dans une modal
+    showCustomModal('Arbre ascendant', html);
+}
+
+// Ajouter le bouton dans la modal principale
+function addAncestorButtonToModal() {
+    const modalContent = document.querySelector('.modal-content .info-section');
+    if (modalContent) {
+        const btnContainer = document.createElement('div');
+        btnContainer.className = 'modal-action-buttons';
+        btnContainer.innerHTML = `
+            <button onclick="showAncestors()" class="btn btn-ancestor">
+                <i class="fas fa-tree"></i> Voir les ancêtres
+            </button>
+        `;
+        modalContent.appendChild(btnContainer);
+    }
 }
 
 // Fonction pour effacer tous les nœuds et connexions
@@ -1500,6 +2045,43 @@ function getAllDescendants(memberId, descendants = new Set()) {
     });
     
     return descendants;
+}
+
+// ============================
+// FONCTION POUR TROUVER TOUS LES DESCENDANTS D'UN MEMBRE
+// ============================
+function findDescendants(memberId) {
+    const descendants = [];
+    const stack = [memberId];
+   
+    while (stack.length > 0) {
+        const currentId = stack.pop();
+       
+        // Trouver tous les enfants de ce membre
+        const children = familyMembers.filter(m =>
+            m.ID_Pere === currentId || m.ID_Mere === currentId
+        );
+       
+        // Ajouter les enfants à la liste des descendants
+        children.forEach(child => {
+            if (!descendants.some(d => d.ID === child.ID)) {
+                descendants.push(child);
+                stack.push(child.ID);
+            }
+        });
+    }
+   
+    // Trier par génération puis par nom
+    return descendants.sort((a, b) => {
+        // Trier d'abord par génération
+        const genDiff = parseInt(a.Generation) - parseInt(b.Generation);
+        if (genDiff !== 0) return genDiff;
+       
+        // Puis par nom
+        const nameA = `${a.Prennom || ''} ${a.Nom || ''}`.toLowerCase();
+        const nameB = `${b.Prennom || ''} ${b.Nom || ''}`.toLowerCase();
+        return nameA.localeCompare(nameB);
+    });
 }
 
 // Fonction pour filtrer l'affichage aux descendants uniquement
@@ -1917,4 +2499,82 @@ function waitForTreeGeneration(callback) {
             callback();
         }
     }, 100);
+}
+
+// ============================
+// MODE PLEIN ÉCRAN
+// ============================
+
+function toggleFullscreen() {
+    const container = document.getElementById('treeContainer');
+    
+    if (!document.fullscreenElement) {
+        container.requestFullscreen();
+        container.classList.add('fullscreen-mode');
+    } else {
+        document.exitFullscreen();
+        container.classList.remove('fullscreen-mode');
+    }
+}
+
+// Mini-map (radar)
+function createMiniMap() {
+    const container = document.getElementById('treeContainer');
+    
+    // Créer la mini-map
+    const minimap = document.createElement('div');
+    minimap.id = 'minimap';
+    minimap.innerHTML = `
+        <div class="minimap-header">
+            <span>Vue d'ensemble</span>
+            <button onclick="toggleMinimap()" class="minimap-toggle">
+                <i class="fas fa-minus"></i>
+            </button>
+        </div>
+        <div id="minimapCanvas" class="minimap-canvas"></div>
+    `;
+    
+    container.appendChild(minimap);
+    
+    // Observer les changements de position
+    container.addEventListener('scroll', updateMinimapViewport);
+    window.addEventListener('resize', updateMinimapViewport);
+}
+
+function updateMinimapViewport() {
+    const container = document.getElementById('treeContainer');
+    const wrapper = document.getElementById('treeWrapper');
+    const minimapCanvas = document.getElementById('minimapCanvas');
+    
+    if (!minimapCanvas) return;
+    
+    // Calculer les proportions
+    const containerRect = container.getBoundingClientRect();
+    const wrapperRect = wrapper.getBoundingClientRect();
+    
+    const scaleX = 200 / wrapperRect.width; // Largeur mini-map
+    const scaleY = 150 / wrapperRect.height;
+    
+    const viewportX = (container.scrollLeft / wrapperRect.width) * 200;
+    const viewportY = (container.scrollTop / wrapperRect.height) * 150;
+    const viewportWidth = (containerRect.width / wrapperRect.width) * 200;
+    const viewportHeight = (containerRect.height / wrapperRect.height) * 150;
+    
+    // Mettre à jour ou créer le viewport
+    let viewport = minimapCanvas.querySelector('.minimap-viewport');
+    if (!viewport) {
+        viewport = document.createElement('div');
+        viewport.className = 'minimap-viewport';
+        minimapCanvas.appendChild(viewport);
+    }
+    
+    viewport.style.width = `${viewportWidth}px`;
+    viewport.style.height = `${viewportHeight}px`;
+    viewport.style.left = `${viewportX}px`;
+    viewport.style.top = `${viewportY}px`;
+}
+
+function toggleMinimap() {
+    const minimap = document.getElementById('minimap');
+    minimap.classList.toggle('collapsed');
 }

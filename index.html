@@ -79,13 +79,10 @@
                     <i class="fas fa-times"></i>
                     Fermer
                 </button>
-                <button class="btn btn-primary" onclick="highlightFamily()">
-                    <i class="fas fa-users"></i>
-                    Voir la famille
-                </button>-->
+                -->
                 <button class="btn btn-descendants" onclick="showDescendants()" id="descendantsBtn">
                     <i class="fas fa-sitemap"></i>
-                    
+                    <span>Descendants</span>
                 </button>
             </div>
         </div>
@@ -203,17 +200,17 @@
             </div>
         </section>
         <!-- Ajout des fonctions -->
-        <div class="tree-toolbar">
-            <button onclick="showExportMenu()" class="toolbar-btn">
+        <div class="tree-toolbar floating">
+            <button onclick="showExportMenu()" class="toolbar-btn" title="Exporter">
                 <i class="fas fa-download"></i> Exporter
             </button>
-            <button onclick="showFamilyStatistics()" class="toolbar-btn">
+            <button onclick="showFamilyStatistics()" class="toolbar-btn" title="Statistiques">
                 <i class="fas fa-chart-bar"></i> Statistiques
             </button>
-            <button onclick="toggleFullscreen()" class="toolbar-btn">
+            <button onclick="toggleFullscreen()" class="toolbar-btn" title="Plein Ecran">
                 <i class="fas fa-expand"></i> Plein écran
             </button>
-            <button onclick="openAddForm()" class="toolbar-btn btn-add">
+            <button onclick="openAddForm()" class="toolbar-btn btn-add" title="Ajouter membre">
                 <i class="fas fa-plus"></i> Ajouter
             </button>
         </div>
@@ -439,14 +436,13 @@
         </div>
     </footer>
 
-    <script src="./js/fonctions.js"></script>
-    <script src="./js/familyManager.js"></script>
-    <script src="./js/photoGallery.js"></script>
+    <script src="./js/fonctions.js"></script>  
     <script src="./js/exportTree.js"></script>
-    <script src="./js/sharing.js"></script>
     <script src="./js/autoSave.js"></script>
     <script src="./js/statistics.js"></script>
-    <!--<script src="./js/theme.js"></script>-->
+    <script src="./js/familyManager.js"></script>
+    <!--<script src="./js/photoGallery.js"></script>
+    <script src="./js/theme.js"></script>-->
 
     <!-- Pour l'export PNG/PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>

@@ -132,51 +132,6 @@ function saveMember() {
 }
 
 // ----------------------------
-// SUPPRIMER UN MEMBRE
-// ----------------------------
-function deleteMember(memberId) {
-    const member = familyMembers.find(m => m.ID === memberId);
-    if (!member) return;
-    
-    // Vérifier si le membre a des enfants
-    const hasChildren = familyMembers.some(m => 
-        m.ID_Pere === memberId || m.ID_Mere === memberId
-    );
-    
-    let message = `Êtes-vous sûr de vouloir supprimer ${member.Prennom} ${member.Nom} ?`;
-    if (hasChildren) {
-        message = `⚠️ ${member.Prennom} ${member.Nom} a des enfants. La suppression va orpheliner ces enfants. Confirmez-vous ?`;
-    }
-    
-    if (confirm(message)) {
-        // Supprimer le membre
-        const index = familyMembers.findIndex(m => m.ID === memberId);
-        if (index !== -1) {
-            familyMembers.splice(index, 1);
-            
-            // Nettoyer les références
-            familyMembers.forEach(m => {
-                if (m.ID_Pere === memberId) m.ID_Pere = '';
-                if (m.ID_Mere === memberId) m.ID_Mere = '';
-                
-                // Nettoyer les conjoints
-                if (m.ConjointID) {
-                    const conjoints = m.ConjointID.split(/[, ]+/);
-                    const newConjoints = conjoints.filter(id => id !== memberId);
-                    m.ConjointID = newConjoints.join(', ');
-                }
-            });
-            
-            saveFamilyData();
-            generateModernFamilyTree();
-            populateMemberSelect();
-            closeModal();
-            showNotification("Membre supprimé", "success");
-        }
-    }
-}
-
-// ----------------------------
 // GÉNÉRER UN NOUVEL ID
 // ----------------------------
 function generateNewId() {
@@ -238,7 +193,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (modalActions) {
         const editBtn = document.createElement('button');
         editBtn.className = 'btn btn-edit';
-        editBtn.innerHTML = '<i class="fas fa-edit"></i> Modifier';
+        editBtn.innerHTML = '<i class="fas fa-edit"></i> Editer';
         editBtn.onclick = function() {
             if (selectedMemberId) {
                 openEditForm(selectedMemberId);
@@ -246,16 +201,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         };
         
-        const deleteBtn = document.createElement('button');
-        deleteBtn.className = 'btn btn-delete';
-        deleteBtn.innerHTML = '<i class="fas fa-trash"></i> Supprimer';
-        deleteBtn.onclick = function() {
-            if (selectedMemberId) {
-                deleteMember(selectedMemberId);
-            }
-        };
-        
-        modalActions.prepend(deleteBtn);
         modalActions.prepend(editBtn);
     }
     

@@ -360,42 +360,56 @@ function createConnection(x1, y1, x2, y2, type) {
 // GESTION DES ÉVÉNEMENTS
 // ============================
 function initEvents() {
-    //Gestion de l'arbre généalogique des descendants
+    // === UN SEUL ÉCOUTEUR POUR LES CLICS SUR LES NŒUDS ===
     document.addEventListener('click', function(e) {
-    const node = e.target.closest('.family-node');
-    if (node) {
-        const memberId = node.dataset.id;
+        const node = e.target.closest('.family-node');
         
-        // En mode descendant, permettre la sélection d'autres descendants
-        if (currentViewMode === 'descendants' && descendantIds.has(memberId)) {
+        // Si on clique sur un nœud
+        if (node) {
+            const memberId = node.dataset.id;
             selectedMemberId = memberId;
-            showMemberModal(memberId);
             
-            // Mettre en surbrillance uniquement dans le groupe descendant
-            document.querySelectorAll('.family-node').forEach(n => {
-                n.classList.remove('active');
-                if (descendantIds.has(n.dataset.id)) {
-                    n.classList.add('descendant-highlight');
-                }
-            });
-            node.classList.add('active');
-            node.classList.remove('descendant-highlight');
-            
-            centerNode(node);
-        } else {
-            // Comportement normal
-            selectedMemberId = memberId;
-            showMemberModal(memberId);
-            
-            document.querySelectorAll('.family-node').forEach(n => {
-                n.classList.remove('active');
-                n.classList.remove('highlighted');
-            });
-            node.classList.add('active');
-            
-            centerNode(node);
+            // En mode descendant, vérifier si le membre est dans les descendants
+            if (currentViewMode === 'descendants' && descendantIds.has(memberId)) {
+                showMemberModal(memberId);
+                
+                // Mettre en surbrillance
+                document.querySelectorAll('.family-node').forEach(n => {
+                    n.classList.remove('active');
+                    if (descendantIds.has(n.dataset.id)) {
+                        n.classList.add('descendant-highlight');
+                    }
+                });
+                node.classList.add('active');
+                node.classList.remove('descendant-highlight');
+                
+                centerNode(node);
+            } else {
+                // Comportement normal
+                showMemberModal(memberId);
+                
+                document.querySelectorAll('.family-node').forEach(n => {
+                    n.classList.remove('active');
+                    n.classList.remove('highlighted');
+                });
+                node.classList.add('active');
+                
+                centerNode(node);
+            }
+            return; // Important : arrêter la propagation
         }
-    }
+        
+        // Si on clique sur une suggestion de recherche
+        const suggestion = e.target.closest('.suggestion-item');
+        if (suggestion) {
+            const memberId = suggestion.dataset.id;
+            const suggestionName = suggestion.querySelector('.suggestion-name')?.textContent || '';
+            document.getElementById('searchInput').value = suggestionName;
+            document.getElementById('searchSuggestions').classList.remove('active');
+            performSearch();
+            showMemberModal(memberId);
+            return;
+        }
     });
 
     // Navigation entre générations
@@ -411,71 +425,80 @@ function initEvents() {
     });
     
     // Recherche
-    document.getElementById('searchBtn').addEventListener('click', performSearch);
-    document.getElementById('searchInput').addEventListener('keyup', function(e) {
-        if (e.key === 'Enter') {
-            performSearch();
-        } else {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                showSearchSuggestions(this.value);
-            }, 300);
-        }
-    });
+    const searchBtn = document.getElementById('searchBtn');
+    if (searchBtn) {
+        searchBtn.addEventListener('click', performSearch);
+    }
     
-    document.getElementById('clearSearchBtn').addEventListener('click', clearSearch);
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('keyup', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            } else {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    showSearchSuggestions(this.value);
+                }, 300);
+            }
+        });
+    }
     
-    // Clic sur un nœud
-    document.addEventListener('click', function(e) {
-        const node = e.target.closest('.family-node');
-        if (node) {
-            const memberId = node.dataset.id;
-            selectedMemberId = memberId;
-            showMemberModal(memberId);
-            
-            // Mettre en surbrillance
-            document.querySelectorAll('.family-node').forEach(n => {
-                n.classList.remove('active');
-            });
-            node.classList.add('active');
-            
-            // Centrer sur le nœud
-            centerNode(node);
-        }
-        
-        // Clic sur une suggestion
-        const suggestion = e.target.closest('.suggestion-item');
-        if (suggestion) {
-            const memberId = suggestion.dataset.id;
-            document.getElementById('searchInput').value = suggestion.querySelector('.suggestion-name').textContent;
-            document.getElementById('searchSuggestions').classList.remove('active');
-            performSearch();
-            showMemberModal(memberId);
-        }
-    });
+    const clearSearchBtn = document.getElementById('clearSearchBtn');
+    if (clearSearchBtn) {
+        clearSearchBtn.addEventListener('click', clearSearch);
+    }
     
     // Fermer la modal
-    //document.getElementById('modalClose').addEventListener('click', closeModal);
-    document.getElementById('modalOverlay').addEventListener('click', function(e) {
-        if (e.target === this) closeModal();
-    });
+    const modalOverlay = document.getElementById('modalOverlay');
+    if (modalOverlay) {
+        modalOverlay.addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+    }
+    
+    const mobileModalClose = document.getElementById('mobileModalClose');
+    if (mobileModalClose) {
+        mobileModalClose.addEventListener('click', closeModal);
+    }
     
     // Contrôles de zoom
-    document.getElementById('zoomIn').addEventListener('click', () => zoomTree(0.2));
-    document.getElementById('zoomOut').addEventListener('click', () => zoomTree(-0.2));
-    document.getElementById('zoomReset').addEventListener('click', resetZoom);
+    const zoomIn = document.getElementById('zoomIn');
+    if (zoomIn) zoomIn.addEventListener('click', () => zoomTree(0.2));
+    
+    const zoomOut = document.getElementById('zoomOut');
+    if (zoomOut) zoomOut.addEventListener('click', () => zoomTree(-0.2));
+    
+    const zoomReset = document.getElementById('zoomReset');
+    if (zoomReset) zoomReset.addEventListener('click', resetZoom);
     
     // Navigation dans l'arbre
     const treeContainer = document.getElementById('treeContainer');
-    treeContainer.addEventListener('mousedown', startDrag);
-    treeContainer.addEventListener('mousemove', dragTree);
-    treeContainer.addEventListener('mouseup', stopDrag);
-    treeContainer.addEventListener('mouseleave', stopDrag);
-    treeContainer.addEventListener('wheel', handleWheel, { passive: false });
+    if (treeContainer) {
+        treeContainer.addEventListener('mousedown', startDrag);
+        treeContainer.addEventListener('mousemove', dragTree);
+        treeContainer.addEventListener('mouseup', stopDrag);
+        treeContainer.addEventListener('mouseleave', stopDrag);
+        treeContainer.addEventListener('wheel', handleWheel, { passive: false });
+    }
     
     // Touche Échap pour fermer la modal
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') closeModal();
+        
+        // Ctrl+F ou Cmd+F pour focus la recherche
+        if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+            e.preventDefault();
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) searchInput.focus();
+        }
+        
+        // Ctrl+L ou Cmd+L pour focus la liste déroulante
+        if ((e.ctrlKey || e.metaKey) && e.key === 'l') {
+            e.preventDefault();
+            const memberSelect = document.getElementById('memberSelect');
+            if (memberSelect) memberSelect.focus();
+        }
     });
     
     // Afficher un membre au hasard au chargement
@@ -489,28 +512,13 @@ function initEvents() {
             if (node) {
                 node.classList.add('active');
                 centerNode(node);
-                // Afficher la modal après un délai
                 setTimeout(() => showMemberModal(randomMember.ID), 1000);
             }
         }
     }, 1500);
-     // Ajuster la taille du container de l'arbre
+    
+    // Ajuster la taille du container de l'arbre
     setTimeout(adjustTreeContainerSize, 100);
-    // Dans initEvents(), ajoutez ce raccourci clavier
-    document.addEventListener('keydown', function(e) {
-        // Ctrl+F ou Cmd+F pour focus la recherche
-        if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
-            e.preventDefault();
-            document.getElementById('searchInput').focus();
-        }
-        
-        // Ctrl+L ou Cmd+L pour focus la liste déroulante
-        if ((e.ctrlKey || e.metaKey) && e.key === 'l') {
-            e.preventDefault();
-            document.getElementById('memberSelect').focus();
-        }
-    });
-    document.getElementById('mobileModalClose').addEventListener('click', closeModal);
 }
 
 // ============================
@@ -787,40 +795,11 @@ function showMemberModal(memberId) {
         // Vider les boutons existants (optionnel, selon ta structure)
         // modalActions.innerHTML = '';
         
-        // 1. BOUTON MODIFIER
-        if (!document.querySelector('.btn-edit')) {
-            const editBtn = document.createElement('button');
-            editBtn.className = 'btn btn-edit';
-            editBtn.innerHTML = '<i class="fas fa-edit"></i> ';
-            editBtn.onclick = function(e) {
-                e.stopPropagation();
-                if (typeof openEditForm === 'function') {
-                    openEditForm(memberId);
-                    closeModal();
-                }
-            };
-            modalActions.appendChild(editBtn);
-        }
-        
-        // 3. BOUTON GALERIE
-        if (!document.querySelector('.btn-gallery')) {
-            const galleryBtn = document.createElement('button');
-            galleryBtn.className = 'btn btn-gallery';
-            galleryBtn.innerHTML = '<i class="fas fa-images"></i>';
-            galleryBtn.onclick = function(e) {
-                e.stopPropagation();
-                if (typeof openPhotoGallery === 'function') {
-                    openPhotoGallery(memberId);
-                }
-            };
-            modalActions.appendChild(galleryBtn);
-        }
-        
         // 4. BOUTON ANCÊTRES
         if (!document.querySelector('.btn-ancestors')) {
             const ancestorsBtn = document.createElement('button');
             ancestorsBtn.className = 'btn btn-ancestors';
-            ancestorsBtn.innerHTML = '<i class="fas fa-tree"></i> ';
+            ancestorsBtn.innerHTML = '<i class="fas fa-tree"></i>Ascendant ';
             ancestorsBtn.onclick = function(e) {
                 e.stopPropagation();
                 if (typeof showAncestors === 'function') {
@@ -835,7 +814,7 @@ function showMemberModal(memberId) {
         if (!document.querySelector('.btn-share')) {
             const shareBtn = document.createElement('button');
             shareBtn.className = 'btn btn-share';
-            shareBtn.innerHTML = '<i class="fas fa-share-alt"></i> ';
+            shareBtn.innerHTML = '<i class="fas fa-share-alt"></i> Partager';
             shareBtn.onclick = function(e) {
                 e.stopPropagation();
                 if (typeof shareMemberProfile === 'function') {
@@ -849,7 +828,7 @@ function showMemberModal(memberId) {
         if (!document.querySelector('.modal-close-btn')) {
             const closeBtn = document.createElement('button');
             closeBtn.className = 'btn modal-close-btn';
-            closeBtn.innerHTML = '<i class="fas fa-times"></i>';
+            closeBtn.innerHTML = '<i class="fas fa-times"></i>Fermer';
             closeBtn.onclick = closeModal;
             modalActions.appendChild(closeBtn);
         }
@@ -863,36 +842,17 @@ function closeModal() {
     document.getElementById('modalOverlay').classList.remove('active');
 }
 
-// Ajouter le bouton de partage dans showMemberModal
-function addShareButtonToModal() {
-    const modalActions = document.querySelector('.modal-actions');
-    if (modalActions) {
-        const shareBtn = document.createElement('button');
-        shareBtn.className = 'btn btn-share';
-        shareBtn.innerHTML = '<i class="fas fa-share-alt"></i> ';
-        shareBtn.onclick = function() {
-            if (selectedMemberId) {
-                shareMemberProfile(selectedMemberId);
-            }
-        };
-        
-        // Insérer avant le bouton fermer
-        const closeBtn = modalActions.querySelector('.modal-close, [onclick="closeModal()"]');
-        if (closeBtn) {
-            modalActions.insertBefore(shareBtn, closeBtn);
-        } else {
-            modalActions.appendChild(shareBtn);
-        }
-    }
-}
 
 // ============================
 // RECHERCHE ET FILTRAGE
 // ============================
 function performSearch() {
-    const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
-    const searchFilter = document.getElementById('searchFilter').value;
-    const generationFilter = document.getElementById('generationFilter').value;
+    const searchInput = document.getElementById('searchInput');
+    if (!searchInput) return;
+    
+    const searchTerm = searchInput.value.trim().toLowerCase();
+    const searchFilter = document.getElementById('searchFilter')?.value || 'all';
+    const generationFilter = document.getElementById('generationFilter')?.value || 'all';
     
     if (!searchTerm) {
         clearSearch();
@@ -906,9 +866,12 @@ function performSearch() {
     
     // Filtrer les membres
     currentSearchResults = familyMembers.filter(member => {
+        // Vérifier que le membre existe et a les propriétés nécessaires
+        if (!member) return false;
+        
         // Filtrer par génération si spécifié
         if (generationFilter !== 'all') {
-            if (member.Generation.toString() !== generationFilter) {
+            if (!member.Generation || member.Generation.toString() !== generationFilter) {
                 return false;
             }
         }
@@ -918,6 +881,7 @@ function performSearch() {
         const firstName = (member.Prennom || '').toLowerCase();
         const lastName = (member.Nom || '').toLowerCase();
         const birthDate = (member.DateNaissance || '').toLowerCase();
+        const generation = (member.Generation || '').toString();
         
         switch(searchFilter) {
             case 'name':
@@ -932,7 +896,7 @@ function performSearch() {
                        firstName.includes(searchTerm) || 
                        lastName.includes(searchTerm) ||
                        birthDate.includes(searchTerm) ||
-                       member.Generation.toString().includes(searchTerm);
+                       generation.includes(searchTerm);
         }
     });
     
@@ -953,7 +917,10 @@ function performSearch() {
     }
     
     // Fermer les suggestions
-    document.getElementById('searchSuggestions').classList.remove('active');
+    const suggestionsContainer = document.getElementById('searchSuggestions');
+    if (suggestionsContainer) {
+        suggestionsContainer.classList.remove('active');
+    }
 }
 
 function updateSearchResultsDisplay() {
@@ -980,8 +947,12 @@ function updateSearchResultsDisplay() {
     }
 }
 
+// ============================
+// AFFICHER LES SUGGESTIONS DE RECHERCHE
+// ============================
 function showSearchSuggestions(searchTerm) {
     const suggestionsContainer = document.getElementById('searchSuggestions');
+    if (!suggestionsContainer) return;
     
     if (!searchTerm || searchTerm.length < 2) {
         suggestionsContainer.classList.remove('active');
@@ -990,10 +961,13 @@ function showSearchSuggestions(searchTerm) {
     }
     
     // Filtrer les suggestions
-    const suggestions = familyMembers.filter(member => {
-        const fullName = `${member.Prennom || ''} ${member.Nom || ''}`.toLowerCase();
-        return fullName.includes(searchTerm.toLowerCase());
-    }).slice(0, 5); // Limiter à 5 suggestions
+    const suggestions = familyMembers
+        .filter(member => {
+            if (!member) return false;
+            const fullName = `${member.Prennom || ''} ${member.Nom || ''}`.toLowerCase();
+            return fullName.includes(searchTerm.toLowerCase());
+        })
+        .slice(0, 5); // Limiter à 5 suggestions
     
     if (suggestions.length === 0) {
         suggestionsContainer.classList.remove('active');
@@ -1003,15 +977,16 @@ function showSearchSuggestions(searchTerm) {
     
     // Afficher les suggestions
     suggestionsContainer.innerHTML = suggestions.map(member => {
-        const fullName = `${member.Prennom} ${member.Nom}`;
-        const birthDate = member.DateNaissance;
+        const fullName = `${member.Prennom || ''} ${member.Nom || ''}`.trim() || 'Nom inconnu';
+        const birthDate = member.DateNaissance || '';
         const birthYear = birthDate && birthDate !== '0000-00-00' ? 
             birthDate.substring(0, 4) : 'Date inconnue';
+        const generation = member.Generation || '?';
         
         return `
             <div class="suggestion-item" data-id="${member.ID}">
                 <div class="suggestion-name">${fullName}</div>
-                <div class="suggestion-details">Génération ${member.Generation} • ${birthYear}</div>
+                <div class="suggestion-details">Génération ${generation} • ${birthYear}</div>
             </div>
         `;
     }).join('');
@@ -1019,14 +994,30 @@ function showSearchSuggestions(searchTerm) {
     suggestionsContainer.classList.add('active');
 }
 
+// ====================
+// EFFACER LA RECHERCHE 
+// ====================
 function clearSearch() {
-    document.getElementById('searchInput').value = '';
-    document.getElementById('searchFilter').value = 'all';
-    document.getElementById('generationFilter').value = 'all';
-    document.getElementById('searchResultsInfo').textContent = 'Tapez un nom pour rechercher un membre de la famille';
-    document.getElementById('searchResultsInfo').classList.remove('highlight');
-    document.getElementById('searchSuggestions').classList.remove('active');
-    document.getElementById('searchSuggestions').innerHTML = '';
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) searchInput.value = '';
+    
+    const searchFilter = document.getElementById('searchFilter');
+    if (searchFilter) searchFilter.value = 'all';
+    
+    const generationFilter = document.getElementById('generationFilter');
+    if (generationFilter) generationFilter.value = 'all';
+    
+    const resultsInfo = document.getElementById('searchResultsInfo');
+    if (resultsInfo) {
+        resultsInfo.textContent = 'Tapez un nom pour rechercher un membre de la famille';
+        resultsInfo.classList.remove('highlight');
+    }
+    
+    const suggestionsContainer = document.getElementById('searchSuggestions');
+    if (suggestionsContainer) {
+        suggestionsContainer.classList.remove('active');
+        suggestionsContainer.innerHTML = '';
+    }
     
     // Réinitialiser les surlignements
     document.querySelectorAll('.family-node').forEach(node => {
@@ -1185,48 +1176,6 @@ document.head.appendChild(style);
 // ============================
 // SURVOL DE LA FAMILLE
 // ============================
-function highlightFamily() {
-    if (!selectedMemberId) return;
-    
-    // Réinitialiser les surlignements
-    document.querySelectorAll('.family-node').forEach(node => {
-        node.classList.remove('highlighted');
-    });
-    
-    // Trouver le membre
-    const member = familyMembers.find(m => m.ID === selectedMemberId);
-    if (!member) return;
-    
-    // Trouver les membres de la famille proche
-    const familyMemberIds = new Set();
-    
-    // Ajouter le membre lui-même
-    familyMemberIds.add(member.ID);
-    
-    // Ajouter les parents
-    if (member.ID_Pere) familyMemberIds.add(member.ID_Pere);
-    if (member.ID_Mere) familyMemberIds.add(member.ID_Mere);
-    
-    // Ajouter le conjoint
-    if (member.ConjointID) familyMemberIds.add(member.ConjointID);
-    
-    // Ajouter les enfants
-    familyMembers.forEach(m => {
-        if (m.ID_Pere === member.ID || m.ID_Mere === member.ID) {
-            familyMemberIds.add(m.ID);
-        }
-    });
-    
-    // Surligner les membres de la famille
-    familyMemberIds.forEach(id => {
-        const node = document.querySelector(`.family-node[data-id="${id}"]`);
-        if (node) {
-            node.classList.add('highlighted');
-        }
-    });
-    
-    showNotification(`${familyMemberIds.size} membres de la famille surlignés`, "success");
-}
 
 // Fonction pour remplir la liste déroulante
 function populateMemberSelect() {

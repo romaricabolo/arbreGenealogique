@@ -785,7 +785,7 @@ function showMemberModal(memberId) {
     const modalActions = document.querySelector('.modal-actions');
     if (modalActions) {
         // Vider les boutons existants (optionnel, selon ta structure)
-        // modalActions.innerHTML = '';
+        modalActions.innerHTML = '';
         
         // 1. BOUTON MODIFIER
         /*
@@ -831,7 +831,25 @@ function showMemberModal(memberId) {
             };
             modalActions.appendChild(ancestorsBtn);
         }*/
+        // ===== 4. BOUTON DESCENDANTS  =====
+        const descendantsBtn = document.createElement('button');
+        descendantsBtn.className = 'btn btn-descendants';
+        descendantsBtn.innerHTML = '<i class="fas fa-sitemap"></i> Descendants';
         
+        descendantsBtn.onclick = (function(id) {
+            return function(e) {
+                e.stopPropagation();
+                if (typeof showDescendants === 'function') {
+                    // Définir le membre sélectionné avant d'appeler showDescendants
+                    selectedMemberId = id;
+                    showDescendants();
+                    closeModal();
+                }
+            };
+        })(memberId);
+        
+        modalActions.appendChild(descendantsBtn);
+
         // 5. BOUTON PARTAGER
         if (!document.querySelector('.btn-share')) {
             const shareBtn = document.createElement('button');
@@ -846,6 +864,7 @@ function showMemberModal(memberId) {
             modalActions.appendChild(shareBtn);
         }
         
+            
         // 6. BOUTON FERMER (toujours en dernier)
         if (!document.querySelector('.modal-close-btn')) {
             const closeBtn = document.createElement('button');
@@ -862,29 +881,6 @@ function showMemberModal(memberId) {
 
 function closeModal() {
     document.getElementById('modalOverlay').classList.remove('active');
-}
-
-// Ajouter le bouton de partage dans showMemberModal
-function addShareButtonToModal() {
-    const modalActions = document.querySelector('.modal-actions');
-    if (modalActions) {
-        const shareBtn = document.createElement('button');
-        shareBtn.className = 'btn btn-share';
-        shareBtn.innerHTML = '<i class="fas fa-share-alt"></i> ';
-        shareBtn.onclick = function() {
-            if (selectedMemberId) {
-                shareMemberProfile(selectedMemberId);
-            }
-        };
-        
-        // Insérer avant le bouton fermer
-        const closeBtn = modalActions.querySelector('.modal-close, [onclick="closeModal()"]');
-        if (closeBtn) {
-            modalActions.insertBefore(shareBtn, closeBtn);
-        } else {
-            modalActions.appendChild(shareBtn);
-        }
-    }
 }
 
 // ============================

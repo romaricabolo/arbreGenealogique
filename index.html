@@ -74,7 +74,7 @@
             <div class="modal-actions">
                 <button class="btn btn-descendants" onclick="showDescendants()" id="descendantsBtn">
                     <i class="fas fa-sitemap"></i>
-                    Descendants
+                    <span>Descendants</span>
                 </button>
             </div>
         </div>
@@ -196,17 +196,17 @@
         </section>
         <!-- Ajout des fonctions -->
         <div class="tree-toolbar">
-            <button onclick="showExportMenu()" class="toolbar-btn">
-                <i class="fas fa-download"></i> Exporter
+            <button onclick="showExportMenu()" class="toolbar-btn" title="Exporter">
+                <i class="fas fa-download"></i>
             </button>
-            <button onclick="showFamilyStatistics()" class="toolbar-btn">
-                <i class="fas fa-chart-bar"></i> Statistiques
+            <button onclick="showFamilyStatistics()" class="toolbar-btn" title="statistiques">
+                <i class="fas fa-chart-bar"></i> 
             </button>
-            <button onclick="toggleFullscreen()" class="toolbar-btn">
-                <i class="fas fa-expand"></i> Plein écran
+            <button onclick="toggleFullscreen()" class="toolbar-btn" title="Plein Ecran">
+                <i class="fas fa-expand"></i> 
             </button>
-            <button onclick="openAddForm()" class="toolbar-btn btn-add">
-                <i class="fas fa-plus"></i> Ajouter
+            <button onclick="openAddForm()" class="toolbar-btn btn-add" title="Ajouter membre">
+                <i class="fas fa-plus"></i> 
             </button>
         </div>
         <!-- Arbre généalogique interactif -->

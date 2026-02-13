@@ -1140,6 +1140,11 @@ body {
     background: linear-gradient(135deg, var(--gen4-color), var(--accent-color));
     color: white;
     border: none;
+    border-radius: 40px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    display: inline-flex;
+    align-items: center;
 }
 
 .btn-descendants:hover {
@@ -2092,6 +2097,13 @@ body {
     background: linear-gradient(135deg, #6c5ce7, #a463f5);
     color: white;
     margin-left: 10px;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 40px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    display: inline-flex;
+    align-items: center;
 }
 
 .btn-share i {
@@ -2217,22 +2229,6 @@ select {
 /* ============================
    STYLES DE LA BARRE D'OUTILS
    ============================ */
-
-.tree-toolbar {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 20px;
-    background: white;
-    border-radius: 50px;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-    border: 1px solid rgba(24, 188, 156, 0.15);
-    backdrop-filter: blur(10px);
-    transition: all 0.3s ease;
-}
-
 .tree-toolbar:hover {
     box-shadow: 0 8px 25px rgba(24, 188, 156, 0.15);
     border-color: rgba(24, 188, 156, 0.3);
@@ -2292,6 +2288,87 @@ select {
 /* État actif / enfoncé */
 .toolbar-btn:active {
     transform: scale(0.95);
+}
+
+/* Tablettes (≤ 768px) - On réduit l'espace */
+@media (max-width: 768px) {
+    .tree-toolbar {
+        padding: 10px 15px;
+        gap: 8px;
+    }
+    
+    .toolbar-btn {
+        padding: 10px 18px;
+        font-size: 0.9rem;
+    }
+}
+
+/* Petits écrans (≤ 576px) - ON CACHE LE TEXTE ! */
+@media (max-width: 576px) {
+    .tree-toolbar {
+        justify-content: center;
+        padding: 10px;
+    }
+    
+    /* Cacher le texte des boutons */
+    .toolbar-btn span {
+        display: none;
+    }
+    
+    /* Garder seulement les icônes */
+    .toolbar-btn {
+        padding: 12px;
+        min-width: auto;
+        border-radius: 50%;
+        aspect-ratio: 1 / 1; /* Forme parfaitement ronde */
+    }
+    
+    /* Ajuster la taille des icônes */
+    .toolbar-btn i {
+        font-size: 1.3rem;
+        margin: 0;
+    }
+    
+    /* Bouton Ajouter spécial */
+    .btn-add {
+        background: linear-gradient(145deg, #18bc9c, #16a085) !important;
+    }
+}
+
+/* Très petits écrans (≤ 380px) - Ajustement fin */
+@media (max-width: 380px) {
+    .tree-toolbar {
+        gap: 6px;
+    }
+    
+    .toolbar-btn {
+        width: 45px;
+        height: 45px;
+        padding: 0;
+    }
+    
+    .toolbar-btn i {
+        font-size: 1.2rem;
+    }
+}
+/* ============================
+   THÈME SOMBRE
+   ============================ */
+
+body.dark-theme .tree-toolbar {
+    background: #2c3e50;
+    border-color: #4a5c6c;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-theme .toolbar-btn {
+    background: #34495e;
+    color: #ecf0f1;
+    border-color: #4a5c6c;
+}
+
+body.dark-theme .btn-add {
+    background: linear-gradient(145deg, #18bc9c, #16a085) !important;
 }
 
 /* BOUTON EXPORTER */
@@ -2433,6 +2510,10 @@ select {
    ============================ */
 
 @media (max-width: 768px) {
+    .btn-share {
+        display: inline-flex;
+        align-items: center;
+    }
     .tree-toolbar {
         padding: 10px 15px;
         gap: 8px;
@@ -2447,6 +2528,9 @@ select {
     .toolbar-btn i {
         font-size: 1rem;
     }
+    .btn-share {
+        justify-content: center;
+    }
 }
 
 @media (max-width: 576px) {
@@ -2458,7 +2542,10 @@ select {
         flex: 1;
         min-width: 120px;
     }
-    
+    .btn-share {
+        display: inline-flex;
+        align-items: center;
+    }
     /* Version icônes seulement sur très petits écrans */
     @media (max-width: 480px) {
         .toolbar-btn span {
@@ -3379,7 +3466,7 @@ body.dark-theme .whatsapp-btn {
 /* Bouton principal (Fermer) */
 .modal-actions .btn-primary,
 .modal-actions .modal-close-btn {
-    background: linear-gradient(145deg, #18bc9c, #16a085);
+    background: linear-gradient(145deg, #bc1846, #ab2f5b);
     color: white;
     border: none;
     padding: 10px 24px;

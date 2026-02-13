@@ -35,6 +35,10 @@ function showShareDialog(member, url) {
     
     const html = `
         <div class="share-dialog">
+            <button class="mobile-close-btn" onclick="this.closest('.modal-overlay').remove()">
+                    <i class="fas fa-times"></i>
+            </button>
+
             <div class="share-header">
                 <div class="share-avatar">
                     ${member.URL_img ? 

@@ -97,8 +97,12 @@ function exportAsCSV() {
 // Ouvrir le menu d'export
 function showExportMenu() {
     const html = `
-        <div class="export-menu">
+        <div class="export-menu" >
             <h3>Exporter l'arbre généalogique</h3>
+
+            <button class="mobile-close-btn" onclick="this.closest('.modal-overlay').remove()">
+                    <i class="fas fa-times"></i>
+            </button>
             
             <button onclick="exportAsPNG()" class="export-btn export-png">
                 <i class="fas fa-image"></i>

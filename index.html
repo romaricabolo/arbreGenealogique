@@ -27,10 +27,6 @@
                     <h2 id="modalName"></h2>
                     <p id="modalTitle"></p>
                 </div>
-                 <!-- Section Contacts -->
-                <div id="contactSection" class="social-links media">
-                    <!-- Les contacts seront injectés ici par JavaScript -->
-                </div>
             </div>
             
             <div class="modal-content">
@@ -74,15 +70,11 @@
                     </div>
                 </div>
             </div>
+            
             <div class="modal-actions">
-                <!--<button class="btn modal-close" id="modalClose">
-                    <i class="fas fa-times"></i>
-                    Fermer
-                </button>
-                -->
                 <button class="btn btn-descendants" onclick="showDescendants()" id="descendantsBtn">
                     <i class="fas fa-sitemap"></i>
-                    <span>Descendants</span>
+                    Descendants
                 </button>
             </div>
         </div>
@@ -94,7 +86,6 @@
             <div class="header-content">
                 <h1>Famille MBOZO'O</h1>
                 <p class="header-tagline">Cinq générations d'histoire et de traditions familiales</p>
-                
                 <div class="header-actions">
                    
                     <!-- Nouvelle liste déroulante -->
@@ -163,6 +154,10 @@
                     </div>
                 </div>
                 
+                <div class="search-results-info" id="searchResultsInfo">
+                    Tapez un nom pour rechercher un membre de la famille
+                </div>
+                
             </div>
         </section>
         <!-- Navigation par générations -->
@@ -200,21 +195,21 @@
             </div>
         </section>
         <!-- Ajout des fonctions -->
-        <div class="tree-toolbar floating">
-            <button onclick="showExportMenu()" class="toolbar-btn" title="Exporter">
+        <div class="tree-toolbar">
+            <button onclick="showExportMenu()" class="toolbar-btn">
                 <i class="fas fa-download"></i> Exporter
             </button>
-            <button onclick="showFamilyStatistics()" class="toolbar-btn" title="Statistiques">
+            <button onclick="showFamilyStatistics()" class="toolbar-btn">
                 <i class="fas fa-chart-bar"></i> Statistiques
             </button>
-            <button onclick="toggleFullscreen()" class="toolbar-btn" title="Plein Ecran">
+            <button onclick="toggleFullscreen()" class="toolbar-btn">
                 <i class="fas fa-expand"></i> Plein écran
             </button>
-            <button onclick="openAddForm()" class="toolbar-btn btn-add" title="Ajouter membre">
+            <button onclick="openAddForm()" class="toolbar-btn btn-add">
                 <i class="fas fa-plus"></i> Ajouter
             </button>
         </div>
-                <!-- Arbre généalogique interactif -->
+        <!-- Arbre généalogique interactif -->
         <section class="tree-section">
             <div class="tree-container" id="treeContainer">
                 <div class="tree-wrapper" id="treeWrapper">
@@ -280,7 +275,6 @@
             <!-- Le contenu sera généré dynamiquement -->
         </section>
     </main>
-
     <!-- Overlay du formulaire d'ajout/modification -->
     <div id="formOverlay" class="modal-overlay">
         <div class="member-modal form-modal">
@@ -435,15 +429,11 @@
             </div>
         </div>
     </footer>
-
-    <script src="./js/fonctions.js"></script>  
     <script src="./js/exportTree.js"></script>
-    <script src="./js/autoSave.js"></script>
     <script src="./js/statistics.js"></script>
+    <script src="./js/fonctions.js"></script>
+    <script src="./js/sharing.js"></script>
     <script src="./js/familyManager.js"></script>
-    <!--<script src="./js/photoGallery.js"></script>
-    <script src="./js/theme.js"></script>-->
-
     <!-- Pour l'export PNG/PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>

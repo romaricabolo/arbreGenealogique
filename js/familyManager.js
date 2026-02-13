@@ -189,7 +189,7 @@ function toggleDecesField() {
 // Initialisation des événements
 document.addEventListener('DOMContentLoaded', function() {
     // Ajouter les boutons dans la modal
-    const modalActions = document.querySelector('.modal-actions');
+   /* const modalActions = document.querySelector('.modal-actions');
     if (modalActions) {
         const editBtn = document.createElement('button');
         editBtn.className = 'btn btn-edit';
@@ -202,7 +202,7 @@ document.addEventListener('DOMContentLoaded', function() {
         };
         
         modalActions.prepend(editBtn);
-    }
+    }*/
     
     // Événements du formulaire
     document.getElementById('formCancel').addEventListener('click', closeForm);

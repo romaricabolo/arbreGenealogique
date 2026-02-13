@@ -11,7 +11,7 @@
     "ConjointID": "P002",
     "URL_img": "./images/mbozo'o_pierre.jpg",
     "estDecede": true,
-    "anneeDeces": "1995",
+    "anneeDeces": "2011",
     "telephone": "",
     "whatsapp": false
   },
@@ -27,7 +27,7 @@
     "ConjointID": "P001",
     "URL_img": "./images/analia.jpg",
     "estDecede": true,
-    "anneeDeces": "2025",
+    "anneeDeces": "2010",
     "telephone": "",
     "whatsapp": false
   },
@@ -42,10 +42,10 @@
     "ID_Mere": "P002",
     "ConjointID": "P137",
     "URL_img": "./images/evina1.jpg",
-    "estDecede": true,
-    "anneeDeces": "2012",
-    "telephone": "+237699999999",
-    "whatsapp": true
+    "estDecede":true ,
+    "anneeDeces": "2010",
+    "telephone": "",
+    "whatsapp": false
   },
   {
     "ID": "P004",
@@ -59,7 +59,7 @@
     "ConjointID": "P138, P139",
     "URL_img": "images/paEb2.jpg",
     "estDecede": true,
-    "anneeDeces": "2025",
+    "anneeDeces": "2015",
     "telephone": "",
     "whatsapp": false
   },
@@ -76,7 +76,7 @@
     "URL_img": "",
     "estDecede": false,
     "anneeDeces": "",
-    "telephone": "+237677777777",
+    "telephone": "",
     "whatsapp": true
   },
   {
@@ -122,7 +122,7 @@
     "ID_Mere": "P002",
     "ConjointID": "P141",
     "URL_img": "",
-    "estDecede": true,
+    "estDecede": false,
     "anneeDeces": "2018",
     "telephone": "",
     "whatsapp": false
@@ -138,10 +138,10 @@
     "ID_Mere": "P002",
     "ConjointID": "P142",
     "URL_img": "",
-    "estDecede": false,
+    "estDecede": true,
     "anneeDeces": "",
-    "telephone": "+237699988877",
-    "whatsapp": true
+    "telephone": "2015",
+    "whatsapp": false
   },
   {
     "ID": "P010",
@@ -154,8 +154,8 @@
     "ID_Mere": "P002",
     "ConjointID": "P143",
     "URL_img": "./images/ngueleZ.jpg",
-    "estDecede": true,
-    "anneeDeces": "2021",
+    "estDecede": false,
+    "anneeDeces": "",
     "telephone": "",
     "whatsapp": false
   },
@@ -298,8 +298,8 @@
     "ID_Mere": "P137",
     "ConjointID": "",
     "URL_img": "",
-    "estDecede": false,
-    "anneeDeces": "",
+    "estDecede": true,
+    "anneeDeces": "2009",
     "telephone": "",
     "whatsapp": false
   },
@@ -858,7 +858,7 @@
     "ID_Mere": "P010",
     "ConjointID": "",
     "URL_img": "",
-    "estDecede": false,
+    "estDecede": true,
     "anneeDeces": "",
     "telephone": "",
     "whatsapp": false
@@ -890,7 +890,7 @@
     "ID_Mere": "P010",
     "ConjointID": "",
     "URL_img": "",
-    "estDecede": false,
+    "estDecede": true,
     "anneeDeces": "",
     "telephone": "",
     "whatsapp": false
@@ -2202,8 +2202,8 @@
     "ID_Mere": "",
     "ConjointID": "P004",
     "URL_img": "./images/maeveline.jpg",
-    "estDecede": true,
-    "anneeDeces": "2017",
+    "estDecede": false,
+    "anneeDeces": "",
     "telephone": "",
     "whatsapp": false
   },
@@ -2266,8 +2266,8 @@
     "ID_Mere": "",
     "ConjointID": "P008",
     "URL_img": "",
-    "estDecede": true,
-    "anneeDeces": "2019",
+    "estDecede": false,
+    "anneeDeces": "",
     "telephone": "",
     "whatsapp": false
   },
@@ -2299,7 +2299,7 @@
     "ConjointID": "P010",
     "URL_img": "",
     "estDecede": true,
-    "anneeDeces": "2005",
+    "anneeDeces": "2025",
     "telephone": "",
     "whatsapp": false
   },
@@ -2314,8 +2314,8 @@
     "ID_Mere": "",
     "ConjointID": "P011",
     "URL_img": "./images/abess.jpg",
-    "estDecede": true,
-    "anneeDeces": "2008",
+    "estDecede": false,
+    "anneeDeces": "",
     "telephone": "",
     "whatsapp": false
   },

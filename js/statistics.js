@@ -7,6 +7,10 @@ function showFamilyStatistics() {
     
     let html = `
         <div class="statistics-container">
+            <button class="mobile-close-btn" onclick="this.closest('.modal-overlay').remove()">
+                    <i class="fas fa-times"></i>
+            </button>
+
             <div class="stats-header">
                 <h3>Statistiques de la famille MBOZO'O</h3>
                 <p>${familyMembers.length} membres enregistrés</p>

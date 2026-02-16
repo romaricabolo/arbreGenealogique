@@ -289,7 +289,6 @@ body {
     align-items: center;
     gap: 0.5rem;
     white-space: nowrap;
-    text-align: center;
 }
 
 .nav-btn:hover {
@@ -2230,6 +2229,22 @@ select {
 /* ============================
    STYLES DE LA BARRE D'OUTILS
    ============================ */
+.tree-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    background: white;
+    border-radius: 50px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    margin-bottom: 25px;
+    border: 1px solid rgba(24, 188, 156, 0.15);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 10;
+}
 .tree-toolbar:hover {
     box-shadow: 0 8px 25px rgba(24, 188, 156, 0.15);
     border-color: rgba(24, 188, 156, 0.3);
@@ -2254,6 +2269,21 @@ select {
     overflow: hidden;
     letter-spacing: 0.3px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+
+.btn-3d {
+    background: linear-gradient(135deg, #9b59b6, #8e44ad) !important;
+    color: white !important;
+}
+
+.btn-3d i {
+    color: white !important;
+}
+
+.btn-3d:hover {
+    background: linear-gradient(135deg, #8e44ad, #9b59b6) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(155, 89, 182, 0.3) !important;
 }
 
 /* Effet de brillance au survol */
@@ -4409,3 +4439,4 @@ body.dark-theme .ancestors-list li {
         display: none;
     }
 }
+

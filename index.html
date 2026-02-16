@@ -195,7 +195,7 @@
             </div>
         </section>
         <!-- Ajout des fonctions mobile-->
-        <div class="tree-toolbar ordinateur">
+        <div class="tree-toolbar">
             <button onclick="showExportMenu()" class="toolbar-btn" title="Exporter">
                 <i class="fas fa-download"></i><span>Exporter</span>
             </button>
@@ -205,8 +205,11 @@
             <button onclick="toggleFullscreen()" class="toolbar-btn" title="Plein Ecran">
                 <i class="fas fa-expand"></i><span>Plein Ecran</span> 
             </button>
-            <button onclick="openAddForm()" class="toolbar-btn btn-add" title="Ajouter membre">
+            <!--<button onclick="openAddForm()" class="toolbar-btn btn-add" title="Ajouter membre">
                 <i class="fas fa-plus"></i><span>Ajouter</span>
+            </button>-->
+            <button onclick="toggle3DMode()" class="toolbar-btn btn-3d">
+                <i class="fas fa-cube"></i> Vue 3D
             </button>
         </div>
         <!-- Arbre généalogique interactif -->
@@ -276,7 +279,7 @@
         </section>
     </main>
     <!-- Overlay du formulaire d'ajout/modification -->
-    <div id="formOverlay" class="modal-overlay">
+    <!--<div id="formOverlay" class="modal-overlay">
         <div class="member-modal form-modal">
             <div class="modal-header">
                 <div class="modal-title">
@@ -383,7 +386,7 @@
                 </button>
             </div>
         </div>
-    </div>
+    </div>-->
     <!-- Pied de page -->
     <footer class="site-footer">
         <div class="main-container">
@@ -433,7 +436,8 @@
     <script src="./js/statistics.js"></script>
     <script src="./js/fonctions.js"></script>
     <script src="./js/sharing.js"></script>
-    <script src="./js/familyManager.js"></script>
+    <!--<script src="./js/familyManager.js"></script>-->
+    <script src="./js/tree3d.js"></script>
     <!-- Pour l'export PNG/PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -441,5 +445,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <!-- Bibliotheque pour le QR Code -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- Bibliothèques Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 </body>
 </html>

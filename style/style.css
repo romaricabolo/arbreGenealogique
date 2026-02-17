@@ -2285,6 +2285,10 @@ select {
     transform: translateY(-2px);
     box-shadow: 0 8px 18px rgba(155, 89, 182, 0.3) !important;
 }
+.btn-game {
+    background: linear-gradient(135deg, #e74c3c, #c0392b) !important;
+    color: white !important;
+}
 
 /* Effet de brillance au survol */
 .toolbar-btn::before {
@@ -2321,65 +2325,107 @@ select {
     transform: scale(0.95);
 }
 
-/* Tablettes (≤ 768px) - On réduit l'espace */
-@media (max-width: 768px) {
-    .tree-toolbar {
-        padding: 10px 15px;
-        gap: 8px;
-    }
-    
-    .toolbar-btn {
-        padding: 10px 18px;
-        font-size: 0.9rem;
-    }
-}
+/* ============================
+   OPTIMISATION POUR GOOGLE PIXEL 6a ET MOBILES
+   ============================ */
 
-/* Petits écrans (≤ 576px) - ON CACHE LE TEXTE ! */
-@media (max-width: 576px) {
+/* Point de rupture spécifique pour petits écrans */
+@media (max-width: 420px) {
     .tree-toolbar {
+        display: flex;
+        flex-direction: row !important; /* Forcer en ligne */
+        flex-wrap: wrap;
         justify-content: center;
-        padding: 10px;
+        gap: 6px;
+        padding: 8px 10px;
+        border-radius: 30px;
     }
     
-    /* Cacher le texte des boutons */
-    .toolbar-btn span {
-        display: none;
-    }
-    
-    /* Garder seulement les icônes */
     .toolbar-btn {
-        padding: 12px;
-        min-width: auto;
-        border-radius: 50%;
-        aspect-ratio: 1 / 1; /* Forme parfaitement ronde */
+        flex: 0 1 auto !important; /* Empêcher l'étirement */
+        min-width: 45px !important; /* Largeur minimale */
+        width: auto !important;
+        padding: 8px 12px !important; /* Padding réduit */
+        font-size: 0.8rem !important; /* Texte plus petit */
+        border-radius: 30px !important;
+        white-space: nowrap;
     }
     
-    /* Ajuster la taille des icônes */
+    /* Icônes plus petites */
     .toolbar-btn i {
-        font-size: 1.3rem;
-        margin: 0;
+        font-size: 0.9rem !important;
+        margin-right: 4px;
     }
     
     /* Bouton Ajouter spécial */
     .btn-add {
-        background: linear-gradient(145deg, #18bc9c, #16a085) !important;
+        padding: 8px 16px !important;
+        min-width: 70px !important;
     }
 }
 
-/* Très petits écrans (≤ 380px) - Ajustement fin */
-@media (max-width: 380px) {
+/* Pour les très petits écrans (moins de 360px) */
+@media (max-width: 360px) {
     .tree-toolbar {
-        gap: 6px;
+        gap: 4px;
+        padding: 6px 8px;
     }
     
     .toolbar-btn {
-        width: 45px;
-        height: 45px;
-        padding: 0;
+        padding: 6px 10px !important;
+        font-size: 0.7rem !important;
     }
     
     .toolbar-btn i {
-        font-size: 1.2rem;
+        font-size: 0.8rem !important;
+    }
+}
+
+/* Version alternative : icônes seulement si l'écran est trop petit */
+@media (max-width: 380px) {
+    .tree-toolbar .toolbar-btn span {
+        display: none; /* Cacher le texte */
+    }
+    
+    .toolbar-btn {
+        padding: 10px !important;
+        border-radius: 50% !important;
+        min-width: 40px !important;
+        width: 40px !important;
+        height: 40px !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .toolbar-btn i {
+        font-size: 1.1rem !important;
+        margin: 0 !important;
+    }
+    
+    .btn-add {
+        background: linear-gradient(135deg, #18bc9c, #16a085) !important;
+    }
+}
+
+/* ============================
+   OPTIMISATION POUR PIXEL SPECIFIQUE
+   ============================ */
+
+/* Pixel 6a spécifique (1080x2400) */
+@media (min-width: 400px) and (max-width: 420px) and (min-height: 800px) {
+    .tree-toolbar {
+        position: sticky;
+        top: 10px;
+        z-index: 100;
+        background: rgba(255,255,255,0.95);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .toolbar-btn {
+        font-size: 0.75rem !important;
+        padding: 8px 10px !important;
     }
 }
 /* ============================
@@ -4440,3 +4486,660 @@ body.dark-theme .ancestors-list li {
     }
 }
 
+/* ============================
+   JEU DES 7 FAMILLES
+   ============================ */
+
+.game-menu {
+    max-width: 800px;
+    padding: 20px;
+}
+
+.game-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin: 25px 0;
+}
+
+.game-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    padding: 25px;
+    border: none;
+    border-radius: 15px;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.game-btn i {
+    font-size: 2.5rem;
+}
+
+.game-btn.solo {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+}
+
+.game-btn.multi {
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+}
+
+.game-btn.rules {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+}
+
+.game-btn:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.family-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin-top: 15px;
+}
+
+.family-preview-card {
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+}
+
+.family-preview-header {
+    padding: 10px;
+    color: white;
+    font-weight: bold;
+    text-align: center;
+}
+
+.family-preview-content {
+    padding: 10px;
+    font-size: 0.85rem;
+}
+
+.family-preview-count {
+    font-weight: bold;
+    color: var(--dark-color);
+}
+
+/* Plateau de jeu */
+.game-board {
+    max-width: 900px;
+    max-height: 600px;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.game-turn {
+    font-size: 1.1rem;
+}
+
+.game-turn strong {
+    color: var(--secondary-color);
+}
+
+.game-families {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.family-section {
+    border: 2px solid;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.family-title {
+    padding: 12px 15px;
+    color: white;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.completed-badge {
+    color: #f1c40f;
+    font-size: 1.2rem;
+}
+
+.family-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+    padding: 15px;
+    background: #f8f9fa;
+}
+
+.game-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: white;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    opacity: 0.8;
+}
+
+.game-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    opacity: 1;
+}
+
+.game-card.collected {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.game-card.collected:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.card-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    overflow: hidden;
+}
+
+.card-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.card-info {
+    flex: 1;
+}
+
+.card-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.card-relation {
+    font-size: 0.7rem;
+    color: var(--dark-gray);
+}
+
+/* Collection joueur */
+.game-collection {
+    margin-top: 20px;
+}
+
+.game-collection h3 {
+    margin-bottom: 15px;
+    color: var(--primary-color);
+}
+
+.collection-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 12px;
+    min-height: 100px;
+}
+
+.collection-card {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    background: white;
+    border-radius: 8px;
+    border-left: 4px solid;
+}
+
+.collection-card-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.9rem;
+    overflow: hidden;
+}
+
+.collection-card-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.collection-card-info {
+    flex: 1;
+}
+
+.collection-card-name {
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.collection-card-family {
+    font-size: 0.65rem;
+    color: var(--dark-gray);
+}
+
+.empty-collection {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 20px;
+    color: var(--dark-gray);
+    font-style: italic;
+}
+
+/* Règles du jeu */
+.game-rules {
+    max-width: 500px;
+    padding: 20px;
+}
+
+.rules-content {
+    margin: 20px 0;
+    line-height: 1.6;
+}
+
+.rules-content h4 {
+    color: var(--primary-color);
+    margin: 15px 0 5px;
+}
+
+.rules-content ul {
+    padding-left: 20px;
+}
+
+.rules-content li {
+    margin: 5px 0;
+}
+
+/* ============================
+   MENU D'IMPRESSION
+   ============================ */
+
+.printable-menu {
+    max-width: 800px;
+    padding: 20px;
+}
+
+.printable-options {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    margin: 25px 0;
+}
+
+.printable-option-group {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 12px;
+}
+
+.printable-option-group h3 {
+    margin: 0 0 12px 0;
+    color: var(--primary-color);
+    font-size: 1rem;
+}
+
+.option-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.option-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border: 1px solid #ddd;
+    border-radius: 30px;
+    background: white;
+    color: #2c3e50;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.option-btn i {
+    font-size: 1rem;
+}
+
+.option-btn:hover {
+    border-color: var(--secondary-color);
+    background: #e8f8f5;
+}
+
+.option-btn.active {
+    background: var(--secondary-color);
+    color: white;
+    border-color: var(--secondary-color);
+}
+
+.option-btn.active i {
+    color: white;
+}
+
+.checkbox-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 0.95rem;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.printable-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 25px;
+}
+
+.btn-large {
+    flex: 1;
+    padding: 14px !important;
+    font-size: 1.1rem !important;
+}
+
+@media (max-width: 576px) {
+    .option-buttons {
+        flex-direction: column;
+    }
+    
+    .option-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .printable-actions {
+        flex-direction: column;
+    }
+}
+
+/* ============================
+   STYLES POUR LE QUIZ DE VALIDATION
+   ============================ */
+
+.quiz-container {
+    max-width: 600px;
+    padding: 20px;
+    animation: slideIn 0.3s ease;
+}
+
+.quiz-header {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.quiz-icon {
+    font-size: 3rem;
+    color: var(--secondary-color);
+    margin-bottom: 10px;
+}
+
+.quiz-header h2 {
+    color: var(--primary-color);
+    margin-bottom: 5px;
+}
+
+.quiz-header p {
+    color: var(--dark-gray);
+    font-size: 0.9rem;
+}
+
+.quiz-progress {
+    height: 6px;
+    background: #ecf0f1;
+    border-radius: 3px;
+    margin-bottom: 25px;
+    overflow: hidden;
+}
+
+.quiz-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #2ecc71, #27ae60);
+    transition: width 0.3s ease;
+}
+
+.quiz-question {
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+}
+
+.quiz-question h3 {
+    margin: 0 0 15px 0;
+    font-size: 1.1rem;
+    color: var(--dark-color);
+}
+
+.quiz-answers {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.quiz-answer {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    background: white;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.95rem;
+}
+
+.quiz-answer:hover {
+    border-color: var(--secondary-color);
+    background: #e8f8f5;
+    transform: translateY(-2px);
+}
+
+.quiz-answer input[type="radio"] {
+    margin-right: 10px;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.quiz-answer .answer-text {
+    flex: 1;
+}
+
+.quiz-answer.selected {
+    border-color: var(--secondary-color);
+    background: #d5f5e3;
+}
+
+.quiz-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: #f39c12;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 5px;
+    transition: all 0.2s;
+}
+
+.quiz-hint:hover {
+    background: #fef5e7;
+}
+
+.quiz-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 25px;
+}
+
+.quiz-actions button {
+    flex: 1;
+}
+
+.quiz-error {
+    margin-top: 20px;
+    padding: 12px;
+    background: #fdeaea;
+    border-left: 4px solid #e74c3c;
+    color: #c0392b;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.quiz-success {
+    margin-top: 20px;
+    padding: 15px;
+    background: #d5f5e3;
+    border-left: 4px solid #2ecc71;
+    color: #27ae60;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Style pour le menu d'export */
+.export-menu {
+    max-width: 500px;
+    padding: 20px;
+}
+
+.export-warning {
+    background: #fef5e7;
+    border-left: 4px solid #f39c12;
+    padding: 12px;
+    border-radius: 8px;
+    margin: 15px 0;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.export-warning i {
+    color: #f39c12;
+    font-size: 1.2rem;
+}
+
+.export-divider {
+    height: 1px;
+    background: #ecf0f1;
+    margin: 20px 0;
+    position: relative;
+}
+
+.export-divider::after {
+    content: 'OU';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 0 10px;
+    color: #95a5a6;
+    font-size: 0.8rem;
+}
+
+.export-print {
+    background: linear-gradient(135deg, #95a5a6, #7f8c8d) !important;
+}
+
+/* Thème sombre */
+body.dark-theme .quiz-question {
+    background: #2c3e50;
+    border-color: #4a5c6c;
+}
+
+body.dark-theme .quiz-question h3 {
+    color: #ecf0f1;
+}
+
+body.dark-theme .quiz-answer {
+    background: #34495e;
+    border-color: #4a5c6c;
+    color: #ecf0f1;
+}
+
+body.dark-theme .quiz-answer:hover {
+    border-color: #18bc9c;
+    background: #3d566e;
+}
+
+body.dark-theme .export-warning {
+    background: #2c3e50;
+    border-left-color: #f39c12;
+    color: #ecf0f1;
+}
+
+body.dark-theme .export-divider::after {
+    background: #2c3e50;
+    color: #bdc3c7;
+}

@@ -30,39 +30,38 @@ const quizDatabase = [
     }
 ];
 
-let currentExportAction = null;
+let currentAction = null;
 
 // Afficher le quiz de validation
 function showValidationQuiz(action) {
-    currentExportAction = action;
-    
+    currentAction = action;
+   
     // Sélectionner 2 questions aléatoires
     const shuffled = [...quizDatabase].sort(() => 0.5 - Math.random());
     const selectedQuestions = shuffled.slice(0, 2);
-    
+   
     let html = `
         <div class="quiz-container">
-    
             <div class="quiz-header">
                 <i class="fas fa-shield-alt quiz-icon"></i>
                 <h2>🔒 Vérification familiale</h2>
                 <p>Pour confirmer que vous êtes un membre de la famille, répondez à ces questions :</p>
             </div>
-            
+           
             <div class="quiz-progress">
                 <div class="quiz-progress-bar" id="quizProgress" style="width: 0%"></div>
             </div>
     `;
-    
+   
     // Générer les questions
     selectedQuestions.forEach((q, index) => {
         const allAnswers = shuffleArray([q.correctAnswer, ...q.wrongAnswers]);
-        
+       
         html += `
-             <button class="mobile-close-btn" onclick="this.closest('.modal-overlay').remove()">
-                    <i class="fas fa-times"></i>
-            </button>
             <div class="quiz-question" id="question-${index}" data-correct="${q.correctAnswer}">
+                 <button class="mobile-close-btn" onclick="this.closest('.modal-overlay').remove()">
+                    <i class="fas fa-times"></i>
+                </button>
                 <h3>Question ${index + 1} : ${q.question}</h3>
                 <div class="quiz-answers">
                     ${allAnswers.map(answer => `
@@ -78,21 +77,21 @@ function showValidationQuiz(action) {
             </div>
         `;
     });
-    
+   
     html += `
             <div class="quiz-actions">
                 <button onclick="submitQuizAnswers()" class="btn btn-primary">
                     <i class="fas fa-check-circle"></i> Valider
                 </button>
-                <button onclick="cancelExport()" class="btn btn-outline">
+                <button onclick="cancelAction()" class="btn btn-outline">
                     <i class="fas fa-times"></i> Annuler
                 </button>
             </div>
-            
+           
             <div class="quiz-error" id="quizError" style="display: none;"></div>
         </div>
     `;
-    
+   
     showCustomModal("🔒 Vérification requise", html);
 }
 
@@ -110,7 +109,7 @@ function showHint(hint) {
 function submitQuizAnswers() {
     const questions = document.querySelectorAll('.quiz-question');
     let correctCount = 0;
-    
+   
     questions.forEach((q, index) => {
         const selected = q.querySelector('input[type="radio"]:checked');
         if (selected) {
@@ -128,23 +127,22 @@ function submitQuizAnswers() {
             q.style.borderColor = '#f39c12';
         }
     });
-    
+   
     // Mettre à jour la barre de progression
     const progress = (correctCount / questions.length) * 100;
     const progressBar = document.getElementById('quizProgress');
     if (progressBar) {
         progressBar.style.width = `${progress}%`;
     }
-    
+   
     // Vérifier si toutes les réponses sont correctes
     if (correctCount === questions.length) {
-        // Succès - exécuter l'action
+        // Succès - exécuter l'action spécifique
         showNotification("✅ Vérification réussie !", "success");
-        
-        // Exécuter l'action
-        //executeExportAction();
-        showPrintableMenu();
-        
+       
+        // Exécuter l'action correspondante
+        executeSpecificAction();
+       
         // Fermer la modal après 1 seconde
         setTimeout(() => {
             const modal = document.querySelector('.modal-overlay.active');
@@ -160,40 +158,51 @@ function submitQuizAnswers() {
     }
 }
 
-// Exécuter l'action d'export
-function executeExportAction() {
-    if (!currentExportAction) return;
-    
-    switch(currentExportAction) {
+// Exécuter l'action spécifique
+function executeSpecificAction() {
+    if (!currentAction) return;
+   
+    switch(currentAction) {
         case 'png':
+            console.log("Export PNG déclenché");
             if (typeof exportAsPNG === 'function') exportAsPNG();
             break;
+           
         case 'pdf':
+            console.log("Export PDF déclenché");
             if (typeof exportAsPDF === 'function') exportAsPDF();
             break;
+           
         case 'csv':
+            console.log("Export CSV déclenché");
             if (typeof exportAsCSV === 'function') exportAsCSV();
             break;
-        case 'printable':
-            if (typeof generatePrintableTree === 'function') generatePrintableTree();
+           
+        case 'print':
+            console.log("Impression déclenchée");
+            // Ouvrir directement la boîte de dialogue d'impression
+            setTimeout(() => {
+                showPrintableMenu();
+            }, 500);
             break;
+           
         default:
-            console.log('Action non reconnue:', currentExportAction);
+            console.log('Action non reconnue:', currentAction);
     }
-    
-    currentExportAction = null;
+   
+    currentAction = null;
 }
 
-// Annuler l'export
-function cancelExport() {
-    currentExportAction = null;
+// Annuler l'action
+function cancelAction() {
+    currentAction = null;
     const modal = document.querySelector('.modal-overlay.active');
     if (modal) modal.remove();
     showNotification("Action annulée", "error");
 }
 
 // ============================
-// FONCTIONS PROTÉGÉES PAR LE QUIZ
+// FONCTIONS SPÉCIFIQUES POUR CHAQUE BOUTON
 // ============================
 
 // Export PNG avec validation
@@ -211,54 +220,54 @@ function exportCSVWithValidation() {
     showValidationQuiz('csv');
 }
 
-// Générer arbre imprimable avec validation
-function generatePrintableWithValidation() {
-    showValidationQuiz('printable');
+// Impression avec validation
+function printWithValidation() {
+    showValidationQuiz('print');
 }
 
 // ============================
-// MODIFICATION DU MENU EXPORT
+// MENU EXPORT (OPTIONNEL - SI TU VEUX GARDER LE MENU)
 // ============================
 
 function showExportMenu() {
     const html = `
         <div class="export-menu">
-             <button class="mobile-close-btn" onclick="this.closest('.modal-overlay').remove()">
-                    <i class="fas fa-times"></i>
+            <button class="mobile-close-btn" onclick="this.closest('.modal-overlay').remove()">
+                <i class="fas fa-times"></i>
             </button>
-            <h3><i class="fas fa-download"></i> Exporter l'arbre généalogique</h3>
+            <h3><i class="fas fa-download"></i> Exporter / Imprimer</h3>
             <p class="export-warning">
                 <i class="fas fa-shield-alt"></i>
-                Une vérification sera demandée pour confirmer que vous êtes un membre de la famille.
+                Une vérification sera demandée pour chaque action.
             </p>
-            
+           
             <button onclick="exportPNGWithValidation()" class="export-btn export-png">
                 <i class="fas fa-image"></i>
-                Image PNG
-                <small>Capture d'écran de l'arbre visible</small>
+                Exporter en PNG
+                <small>Image de l'arbre</small>
             </button>
-            
+           
             <button onclick="exportPDFWithValidation()" class="export-btn export-pdf">
                 <i class="fas fa-file-pdf"></i>
-                Document PDF
-                <small>Format imprimable</small>
+                Exporter en PDF
+                <small>Document PDF</small>
             </button>
-            
+           
             <button onclick="exportCSVWithValidation()" class="export-btn export-csv">
                 <i class="fas fa-file-csv"></i>
-                Fichier CSV
-                <small>Tous les membres (tableau)</small>
+                Exporter en CSV
+                <small>Tableau des membres</small>
             </button>
-            
+           
             <div class="export-divider"></div>
-            
-            <button onclick="generatePrintableWithValidation()" class="export-btn export-print">
+           
+            <button onclick="printWithValidation()" class="export-btn export-print">
                 <i class="fas fa-print"></i>
-                Générer arbre imprimable
-                <small>Fichier HTML à imprimer</small>
+                Imprimer
+                <small>Ouvrir la boîte d'impression</small>
             </button>
         </div>
     `;
-    
+   
     showCustomModal('📥 Exporter / Imprimer', html);
 }

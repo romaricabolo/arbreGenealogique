@@ -105,7 +105,13 @@
                         <button class="btn-reset-view" onclick="resetFamilyView()" title="Revenir à la vue complète">
                             <i class="fas fa-times"></i>
                         </button>
+                        
                     </div>
+                    <!-- ===== BOUTON DARK MODE ===== -->
+                    <button id="themeToggle" class="theme-toggle-btn" title="Changer le thème">
+                        <i class="fas fa-moon"></i>
+                        <span class="theme-text">Sombre</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -211,9 +217,13 @@
              <button onclick="showGameMenu()" class="toolbar-btn btn-game">
                 <i class="fas fa-gamepad"></i> Jeu
             </button>-->
+            <button onclick="showFamilyPresentation()" class="toolbar-btn btn-presentation">
+                <i class="fas fa-film"></i> Présentation
+            </button>
             <button onclick="toggle3DMode()" class="toolbar-btn btn-3d">
                 <i class="fas fa-cube"></i> Vue 3D
             </button>
+             
         </div>
         <!-- Arbre généalogique interactif -->
         <section class="tree-section">
@@ -440,6 +450,7 @@
     <script src="./js/fonctions.js"></script>
     <script src="./js/sharing.js"></script>
     <script src="./js/exportValidation.js"></script>
+    <script src="./js/familyPresentation.js"></script>
     <!--<script src="./js/jeu7familles.js"></script>-->
     <script src="./js/printableTree.js"></script>
     <!--<script src="./js/familyManager.js"></script>-->
@@ -454,5 +465,6 @@
     <!-- Bibliothèques Three.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="./js/theme.js"></script>
 </body>
 </html>

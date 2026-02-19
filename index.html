@@ -6,7 +6,10 @@
     <title>Arbre Généalogique de la Famille MBOZO'O</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="./style/style.css">
+    <link rel="stylesheet" href="./style/galerie.css">
     <link rel="icon" type="image/x-icon" href="./images/couple2.png">
+
+    
 </head>
 <body>
     <!-- Overlay de chargement -->
@@ -216,6 +219,9 @@
             </button>
              <button onclick="showGameMenu()" class="toolbar-btn btn-game">
                 <i class="fas fa-gamepad"></i> Jeu
+            </button>
+            <button onclick="openGalerie()" class="toolbar-btn btn-galerie">
+                <i class="fas fa-images"></i> Galerie
             </button>-->
             <button onclick="showFamilyPresentation()" class="toolbar-btn btn-presentation">
                 <i class="fas fa-film"></i> <span>Présentation</span>
@@ -237,7 +243,7 @@
         <!-- Légende et contrôles -->
         <section class="controls-section">
             <div class="legend-container">
-                <div class="legend-section">
+                <div class="legend-section displayy">
                     <h3>Légende des générations</h3>
                     <div class="legend-items">
                         <div class="legend-item">
@@ -451,7 +457,8 @@
     <script src="./js/sharing.js"></script>
     <script src="./js/exportValidation.js"></script>
     <script src="./js/familyPresentation.js"></script>
-    <!--<script src="./js/jeu7familles.js"></script>-->
+    <!--<script src="./js/galerie.js"></script>
+    <script src="./js/jeu7familles.js"></script>-->
     <script src="./js/printableTree.js"></script>
     <!--<script src="./js/familyManager.js"></script>-->
     <script src="./js/tree3d.js"></script>

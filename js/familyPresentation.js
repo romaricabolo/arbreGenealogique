@@ -106,6 +106,11 @@ function showFamilyPresentation() {
     
     // Ajouter l'effet de confettis
     startConfetti();
+
+    // Initialiser la voix off
+    setTimeout(() => {
+        initVoiceForPresentation();
+    }, 500);
 }
 
 // Générer le HTML d'une slide
@@ -314,6 +319,8 @@ function prevSlide() {
 }
 
 // Mettre à jour la slide avec animation
+// Mettre à jour la slide avec animation + VOIX OFF
+// Mettre à jour la slide avec animation
 function updateSlide() {
     const slideContainer = document.getElementById('slideContainer');
     const genIndicator = document.getElementById('genIndicator');
@@ -347,6 +354,12 @@ function updateSlide() {
         setTimeout(() => {
             screen.style.boxShadow = '';
         }, 300);
+        
+        // === VOIX OFF - Petit délai pour laisser l'animation commencer ===
+        setTimeout(() => {
+            speakCurrentMember();
+        }, 500);
+        
     }, 300);
 }
 
@@ -413,5 +426,341 @@ function addPresentationButton() {
         } else {
             toolbar.appendChild(btn);
         }
+    }
+}
+
+// ============================
+// VOIX OFF - VERSION SIMPLE AVEC INDICATEURS
+// ============================
+
+let voiceEnabled = true;
+let currentUtterance = null;
+
+// Initialiser la voix
+function initVoice() {
+    if (!window.speechSynthesis) {
+        console.warn("⚠️ Synthèse vocale non supportée");
+        return false;
+    }
+    
+    // Forcer le chargement des voix
+    window.speechSynthesis.getVoices();
+    console.log("✅ Système vocal initialisé");
+    return true;
+}
+
+// Obtenir une voix française (si possible masculine)
+function getFrenchVoice() {
+    const voices = window.speechSynthesis.getVoices();
+    
+    // Chercher une voix française
+    const frenchVoices = voices.filter(v => v.lang.includes('fr'));
+    
+    if (frenchVoices.length === 0) return null;
+    
+    // Priorité aux voix qui semblent masculines
+    const maleVoice = frenchVoices.find(v => 
+        v.name.includes('Google') || 
+        v.name.includes('Microsoft') ||
+        v.name.includes('Male')
+    );
+    
+    return maleVoice || frenchVoices[0];
+}
+
+// Parler le nom avec civilité
+function speakMemberName(member) {
+    if (!window.speechSynthesis || !voiceEnabled) return;
+    
+    // Arrêter toute parole en cours
+    window.speechSynthesis.cancel();
+    hideAllIndicators();
+    
+    // Déterminer la civilité
+    const civilite = member.Sexe === 'M' ? 'Monsieur' : 'Madame';
+    const prenom = member.Prennom || '';
+    const nom = member.Nom || '';
+    
+    // Construire le texte à dire
+    let textToSpeak = '';
+    
+    if (civilite && prenom && nom) {
+        textToSpeak = `${civilite} ${prenom} ${nom}`;
+    } else if (prenom && nom) {
+        textToSpeak = `${prenom} ${nom}`;
+    } else {
+        textToSpeak = prenom || nom || 'Membre de la famille';
+    }
+    
+    console.log("🗣️ Annonce:", textToSpeak);
+    
+    // Créer l'énoncé
+    const utterance = new SpeechSynthesisUtterance(textToSpeak);
+    
+    // Configuration
+    utterance.lang = 'fr-FR';
+    utterance.rate = 0.85;      // Un peu lent pour plus de solennité
+    utterance.pitch = 0.8;       // Voix grave
+    utterance.volume = 1;
+    
+    // Choisir une voix
+    const voice = getFrenchVoice();
+    if (voice) {
+        utterance.voice = voice;
+        console.log("🎤 Voix utilisée:", voice.name);
+    }
+    
+    // Sauvegarder
+    currentUtterance = utterance;
+    
+    // Afficher l'indicateur
+    showVoiceIndicator(true, textToSpeak);
+    
+    // Événements
+    utterance.onstart = () => {
+        console.log("🎙️ Début de la parole");
+        document.body.classList.add('voice-active');
+    };
+    
+    utterance.onend = () => {
+        console.log("🎙️ Fin de la parole");
+        hideAllIndicators();
+        document.body.classList.remove('voice-active');
+    };
+    
+    utterance.onerror = (e) => {
+        console.error("❌ Erreur voix:", e);
+        hideAllIndicators();
+        document.body.classList.remove('voice-active');
+    };
+    
+    // Lancer la parole
+    window.speechSynthesis.speak(utterance);
+}
+
+// Indicateur visuel
+function showVoiceIndicator(active, text = '') {
+    // Supprimer l'ancien indicateur s'il existe
+    const oldIndicator = document.getElementById('voiceIndicator');
+    if (oldIndicator) oldIndicator.remove();
+    
+    if (!active) return;
+    
+    // Créer le nouvel indicateur
+    const indicator = document.createElement('div');
+    indicator.id = 'voiceIndicator';
+    indicator.className = 'voice-indicator';
+    indicator.innerHTML = `
+        <div class="voice-indicator-content">
+            <i class="fas fa-volume-up voice-icon"></i>
+            <div class="voice-wave">
+                <span></span><span></span><span></span><span></span>
+            </div>
+            <span class="voice-text">${text || 'Présentation...'}</span>
+        </div>
+    `;
+    
+    document.body.appendChild(indicator);
+}
+
+function hideAllIndicators() {
+    const indicator = document.getElementById('voiceIndicator');
+    if (indicator) indicator.remove();
+}
+
+// Activer/désactiver la voix
+function toggleVoice() {
+    voiceEnabled = !voiceEnabled;
+    
+    if (!voiceEnabled) {
+        if (window.speechSynthesis) {
+            window.speechSynthesis.cancel();
+        }
+        hideAllIndicators();
+        document.body.classList.remove('voice-active');
+    }
+    
+    // Mettre à jour le bouton
+    const btn = document.getElementById('voiceToggleBtn');
+    if (btn) {
+        btn.innerHTML = voiceEnabled ? '<i class="fas fa-volume-up"></i>' : '<i class="fas fa-volume-mute"></i>';
+        btn.title = voiceEnabled ? 'Désactiver la voix' : 'Activer la voix';
+    }
+}
+
+// Ajouter le bouton de contrôle vocal
+function addVoiceButton() {
+    const header = document.querySelector('.presentation-header');
+    if (!header) return;
+    
+    // Supprimer l'ancien bouton
+    const oldBtn = document.getElementById('voiceToggleBtn');
+    if (oldBtn) oldBtn.remove();
+    
+    const btn = document.createElement('button');
+    btn.id = 'voiceToggleBtn';
+    btn.className = 'presentation-btn voice-toggle-btn';
+    btn.innerHTML = '<i class="fas fa-volume-up"></i>';
+    btn.title = 'Désactiver la voix';
+    btn.onclick = toggleVoice;
+    
+    // Ajouter dans les contrôles existants
+    const controls = header.querySelector('.presentation-controls');
+    if (controls) {
+        controls.appendChild(btn);
+    } else {
+        header.appendChild(btn);
+    }
+}
+
+// Style des indicateurs
+function addVoiceStyles() {
+    const style = document.createElement('style');
+    style.textContent = `
+        .voice-indicator {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 21000;
+            animation: slideUp 0.3s ease;
+        }
+        
+        .voice-indicator-content {
+            background: linear-gradient(135deg, #18bc9c, #16a085);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 60px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 10px 40px rgba(24,188,156,0.4);
+            border: 2px solid rgba(255,255,255,0.3);
+            backdrop-filter: blur(5px);
+        }
+        
+        .voice-icon {
+            font-size: 1.5rem;
+            animation: pulse 1s infinite;
+        }
+        
+        .voice-wave {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            height: 30px;
+        }
+        
+        .voice-wave span {
+            width: 5px;
+            height: 100%;
+            background: white;
+            border-radius: 10px;
+            animation: wave 1s infinite;
+        }
+        
+        .voice-wave span:nth-child(1) { animation-delay: 0s; }
+        .voice-wave span:nth-child(2) { animation-delay: 0.2s; }
+        .voice-wave span:nth-child(3) { animation-delay: 0.4s; }
+        .voice-wave span:nth-child(4) { animation-delay: 0.6s; }
+        
+        @keyframes wave {
+            0%, 100% { transform: scaleY(0.3); }
+            50% { transform: scaleY(1); }
+        }
+        
+        .voice-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            max-width: 300px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translate(-50%, 20px);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
+        }
+        
+        /* Effet sur l'écran quand la voix parle */
+        body.voice-active .presentation-screen {
+            box-shadow: 0 0 30px #18bc9c, 0 0 60px rgba(24,188,156,0.3);
+            transition: box-shadow 0.3s;
+        }
+        
+        .voice-toggle-btn {
+            background: #18bc9c !important;
+            color: white !important;
+        }
+        
+        .voice-toggle-btn i {
+            font-size: 1.2rem;
+        }
+    `;
+    
+    document.head.appendChild(style);
+}
+
+// Modifier la fonction updateSlide
+function updateSlide() {
+    const slideContainer = document.getElementById('slideContainer');
+    const genIndicator = document.getElementById('genIndicator');
+    const currentCount = document.getElementById('currentCount');
+    const currentGen = document.getElementById('currentGen');
+    const progressBar = document.getElementById('progressBar');
+    
+    if (!slideContainer) return;
+    
+    const member = presentationMembers[currentSlide];
+    
+    // Animation de sortie
+    slideContainer.style.animation = 'slideOut 0.3s ease forwards';
+    
+    setTimeout(() => {
+        // Changer le contenu
+        slideContainer.innerHTML = generateMemberSlide(member);
+        
+        // Animation d'entrée
+        slideContainer.style.animation = 'slideInLiga 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards';
+        
+        // Mettre à jour les indicateurs
+        if (genIndicator) genIndicator.textContent = `Génération ${member.Generation}`;
+        if (currentCount) currentCount.textContent = currentSlide + 1;
+        if (currentGen) currentGen.textContent = `Gén. ${member.Generation}`;
+        if (progressBar) progressBar.style.width = `${((currentSlide + 1) / presentationMembers.length) * 100}%`;
+        
+        // Effet de flash
+        const screen = document.querySelector('.presentation-screen');
+        screen.style.boxShadow = '0 0 50px var(--secondary-color)';
+        setTimeout(() => {
+            screen.style.boxShadow = '';
+        }, 300);
+        
+        // Lire le nom avec civilité
+        setTimeout(() => {
+            speakMemberName(member);
+        }, 500);
+        
+    }, 300);
+}
+
+// Initialiser au démarrage de la présentation
+function initVoiceForPresentation() {
+    if (initVoice()) {
+        addVoiceStyles();
+        addVoiceButton();
     }
 }
